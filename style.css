@@ -82,7 +82,8 @@ body {
 }
 
 .auth-page {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 [data-theme="dark"] body {
@@ -890,6 +891,14 @@ form {
 
   .form-panel {
     padding: 20px 20px 24px;
+  }
+}
+
+@media (max-height: 900px) {
+  .auth-page .page-shell {
+    align-items: flex-start;
+    padding-top: 24px;
+    padding-bottom: 24px;
   }
 }
 
