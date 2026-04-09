@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-page page-login" data-page="login">
+  <div class="page-shell">
+    <div class="theme-toggle">
+      <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+        <div class="theme-toggle-knob">
+          <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+          <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </div>
+      </button>
+    </div>
+
+    <main class="auth-layout">
+      <section class="hero-panel">
+        <div class="hero-chip">Dashboard inteligente de energia</div>
+
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+
+        <h1 class="hero-title">Acompanhe gastos de energia e indicadores verdes em um s&oacute; painel.</h1>
+        <p class="hero-text">Entre para monitorar consumo, analisar custos, comparar unidades e transformar dados ambientais da empresa em decis&otilde;es mais r&aacute;pidas.</p>
+      </section>
+
+      <section class="form-panel">
+        <div class="form-card">
+          <div class="form-card-top">
+            <span class="eyebrow">Bem-vindo de volta</span>
+            <h2 class="form-title">Acessar painel</h2>
+            <p class="form-subtitle">Use seu e-mail corporativo para entrar no dashboard.</p>
+          </div>
+
+          <form id="loginForm" novalidate>
+            <div class="status-message" id="loginStatus" aria-live="polite"></div>
+
+            <div class="field-group">
+              <label for="email">E-mail</label>
+              <div class="input-group">
+                <input type="email" id="email" name="email" placeholder="voc&#234;@empresa.com" autocomplete="email" required>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <div class="field-row">
+                <label for="senha">Senha</label>
+                <a href="#" class="link">Esqueci a senha</a>
+              </div>
+              <div class="input-group password-group">
+                <input type="password" id="senha" name="senha" placeholder="Digite sua senha" autocomplete="current-password" required>
+                <button type="button" class="toggle-password" data-target="senha" aria-label="Mostrar senha">
+                  <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                  <svg class="eye-off-icon hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                    <path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div class="options-row">
+              <label class="checkbox-label" for="lembrar">
+                <input type="checkbox" id="lembrar" name="lembrar">
+                <span>Manter sess&atilde;o neste dispositivo</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn-primary">Entrar</button>
+
+            <p class="form-footer">
+              N&atilde;o tem uma conta? <a href="cadastro.html" class="link auth-nav-link" data-auth-nav="register">Criar acesso</a>
+            </p>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
