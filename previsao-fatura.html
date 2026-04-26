@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Previs&atilde;o de Fatura</title>
+  <meta name="description" content="Veja a estimativa reativa em tempo real da fatura mensal baseada em kWh e tarifa para ajustar o orçamento com antecedência.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page forecast-page" data-page="forecast">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US10</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Previs&atilde;o de fatura</strong>
+        <p>Transforma o consumo acumulado em estimativa financeira quase em tempo real para ajustar orçamento antes do fechamento.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="previsao-fatura.html" class="sidebar-link is-active">Previs&atilde;o de fatura</a>
+        <a href="ranking-custos.html" class="sidebar-link">Ranking de custos</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Uso executivo</span>
+        <p>O módulo estima a fatura atual com base em kWh, tarifa e tendência diária para ajudar o diretor financeiro a agir antes do estouro.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero forecast-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US10</span>
+          <h1>Estimativa reativa da fatura mensal com base em kWh e tarifa.</h1>
+          <p>Acompanhe o consumo acumulado, veja a proje&ccedil;&atilde;o de fechamento do m&ecirc;s e compare a previs&atilde;o com o orçamento antes que a fatura fique fora de controle.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Cen&aacute;rio monitorado</span>
+          <strong id="forecastCycleTitle">Mar&ccedil;o de 2026</strong>
+          <span id="forecastCycleSubtitle">Tarifa horo-sazonal verde</span>
+          <div class="hero-card-meta">
+            <span id="forecastBudgetLabel">Orçamento R$ 132.000</span>
+            <span id="forecastUpdatedAt">Atualizado às 14h20</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="forecastMonthSelect">M&ecirc;s da previsão</label>
+          <div class="dashboard-select">
+            <select id="forecastMonthSelect" aria-label="Selecionar mês da previsão">
+              <option value="2026-01">Janeiro de 2026</option>
+              <option value="2026-02">Fevereiro de 2026</option>
+              <option value="2026-03" selected>Mar&ccedil;o de 2026</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="forecastTariffSelect">Perfil tarif&aacute;rio</label>
+          <div class="dashboard-select">
+            <select id="forecastTariffSelect" aria-label="Selecionar perfil tarifário">
+              <option value="green" selected>Horo-sazonal verde</option>
+              <option value="blue">Horo-sazonal azul</option>
+              <option value="flat">Convencional</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-message" id="forecastStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid forecast-metrics" aria-label="Indicadores da previsão financeira">
+        <article class="metric-card">
+          <span class="metric-label">Consumo acumulado</span>
+          <strong class="metric-value" id="forecastAccumulatedKwh">0 kWh</strong>
+          <p class="metric-helper">kWh já registrados no ciclo atual.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Fatura estimada</span>
+          <strong class="metric-value" id="forecastProjectedBill">R$ 0</strong>
+          <p class="metric-helper">Projeção com base na tendência diária e tarifa atual.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Desvio vs orçamento</span>
+          <strong class="metric-value" id="forecastBudgetDelta">R$ 0</strong>
+          <p class="metric-helper">Diferença esperada entre previsão e limite orçado.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Fechamento previsto</span>
+          <strong class="metric-value" id="forecastCommitment">0%</strong>
+          <p class="metric-helper">Percentual do orçamento que tende a ser consumido.</p>
+        </article>
+      </section>
+
+      <section class="forecast-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Curva financeira</span>
+              <h2>Acumulado, orçamento e projeção final</h2>
+            </div>
+          </div>
+
+          <div class="forecast-panel">
+            <div class="budget-gauge">
+              <div class="budget-gauge-track"></div>
+              <div class="budget-gauge-fill" id="forecastGaugeFill"></div>
+              <div class="budget-gauge-limit" id="forecastGaugeLimit"></div>
+            </div>
+            <div class="meter-legend">
+              <span><i class="legend-dot actual-dot"></i>Consumo projetado</span>
+              <span><i class="legend-dot goal-dot"></i>Orçamento</span>
+            </div>
+            <p class="chart-footnote" id="forecastNarrative">Carregando leitura financeira.</p>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Composição tarifária</span>
+              <h2>Faixas de custo da conta</h2>
+            </div>
+          </div>
+
+          <div class="tariff-stack" id="tariffStack">
+            <div class="tariff-item">
+              <span>Carregando tarifa...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Simulação do mês</span>
+              <h2>Itens que mais puxam a previsão</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Componente</th>
+                  <th>Consumo</th>
+                  <th>Tarifa aplicada</th>
+                  <th>Custo estimado</th>
+                  <th>Participação</th>
+                  <th>Leitura</th>
+                </tr>
+              </thead>
+              <tbody id="forecastComponentTableBody">
+                <tr>
+                  <td colspan="6">Carregando itens...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Ajuste de orçamento</span>
+              <h2>Próximas decisões</h2>
+            </div>
+          </div>
+
+          <ul class="insight-list" id="forecastInsights">
+            <li>Carregando recomendações...</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

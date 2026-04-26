@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Relat&oacute;rio ESG</title>
+  <meta name="description" content="Extraia um relat&oacute;rio mensal ESG com consumo de energia, metas de redu&ccedil;&atilde;o e exporta&ccedil;&atilde;o audit&aacute;vel em PDF e CSV no Lumem Flow.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page report-page" data-page="report">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US05</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Relat&oacute;rio mensal ESG</strong>
+        <p>Cruza consumo de energia com metas de redu&ccedil;&atilde;o para evid&ecirc;ncias audit&aacute;veis.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navega&ccedil;&atilde;o principal">
+        <a href="relatorio-esg.html" class="sidebar-link is-active">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Escopo MVP</span>
+        <p>Exporta&ccedil;&atilde;o em PDF/CSV e rastreabilidade por m&ecirc;s, empresa e setor.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">Analista de sustentabilidade</span>
+          <h1>Relat&oacute;rio mensal com metas ESG e evid&ecirc;ncias export&aacute;veis.</h1>
+          <p>Selecione o m&ecirc;s, revise o consumo por setor, acompanhe o desvio contra a meta e exporte os dados para auditoria.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Empresa monitorada</span>
+          <strong id="reportCompany">Atacad&atilde;o Horizonte Sul</strong>
+          <span id="reportUnitCount">4 unidades integradas</span>
+          <div class="hero-card-meta">
+            <span id="reportMonthLabel">Mar&ccedil;o de 2026</span>
+            <span id="reportProtocol">Protocolo ESG-2026-03-118</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="reportMonth">Compet&ecirc;ncia do relat&oacute;rio</label>
+          <div class="dashboard-select">
+            <select id="reportMonth" aria-label="Selecionar compet&ecirc;ncia do relat&oacute;rio">
+              <option value="2026-01">Janeiro de 2026</option>
+              <option value="2026-02">Fevereiro de 2026</option>
+              <option value="2026-03" selected>Mar&ccedil;o de 2026</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group toolbar-actions">
+          <button type="button" class="btn-secondary" id="exportCsv">Exportar CSV</button>
+          <button type="button" class="btn-primary dashboard-btn" id="exportPdf">
+            <span class="btn-label">Exportar PDF</span>
+            <span class="btn-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+      </section>
+
+      <div class="status-message" id="reportStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid" aria-label="Indicadores principais do relat&oacute;rio">
+        <article class="metric-card">
+          <span class="metric-label">Consumo do m&ecirc;s</span>
+          <strong class="metric-value" id="metricConsumption">0 kWh</strong>
+          <p class="metric-helper">Energia consolidada de todas as unidades no per&iacute;odo.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Meta de redu&ccedil;&atilde;o</span>
+          <strong class="metric-value" id="metricTarget">0%</strong>
+          <p class="metric-helper">Compromisso mensal definido no plano ESG da empresa.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Redu&ccedil;&atilde;o alcan&ccedil;ada</span>
+          <strong class="metric-value" id="metricAchieved">0%</strong>
+          <p class="metric-helper">Comparativo entre a linha de base e o consumo atual.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">CO2 evitado</span>
+          <strong class="metric-value" id="metricCo2">0 kg</strong>
+          <p class="metric-helper">Estimativa derivada da redu&ccedil;&atilde;o energ&eacute;tica reportada.</p>
+        </article>
+      </section>
+
+      <section class="report-grid">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Resumo executivo</span>
+              <h2>Desempenho contra a meta mensal</h2>
+            </div>
+            <span class="status-pill" id="reportStatusPill">Em acompanhamento</span>
+          </div>
+
+          <div class="progress-panel">
+            <div class="progress-summary">
+              <span class="progress-caption">Redu&ccedil;&atilde;o consolidada</span>
+              <strong id="progressHeadline">0% frente &agrave; meta</strong>
+              <p id="progressNarrative">Carregando leitura consolidada do m&ecirc;s selecionado.</p>
+            </div>
+
+            <div class="target-meter" aria-hidden="true">
+              <div class="target-meter-track"></div>
+              <div class="target-meter-goal" id="meterGoal"></div>
+              <div class="target-meter-fill" id="meterActual"></div>
+            </div>
+
+            <div class="meter-legend">
+              <span><i class="legend-dot goal-dot"></i>Meta</span>
+              <span><i class="legend-dot actual-dot"></i>Realizado</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Rastro audit&aacute;vel</span>
+              <h2>Evid&ecirc;ncias prontas para exportar</h2>
+            </div>
+          </div>
+
+          <ul class="audit-list" id="auditList">
+            <li>Carregando evid&ecirc;ncias...</li>
+          </ul>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Setores avaliados</span>
+              <h2>Consumo cruzado com meta de redu&ccedil;&atilde;o</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Setor</th>
+                  <th>Base (kWh)</th>
+                  <th>Atual (kWh)</th>
+                  <th>Meta</th>
+                  <th>Redu&ccedil;&atilde;o</th>
+                  <th>Desvio</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="sectorTableBody">
+                <tr>
+                  <td colspan="7">Carregando setores...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Leitura visual</span>
+              <h2>Ranking por intensidade energ&eacute;tica</h2>
+            </div>
+          </div>
+
+          <div class="bars-chart" id="sectorBars">
+            <div class="bar-row">
+              <span>Carregando gr&aacute;fico...</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Ranking Setorial</title>
+  <meta name="description" content="Acompanhe o ranking setorial de sustentabilidade com pontuação, eficiência energética e destaques entre os setores da operação.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page ranking-page" data-page="ranking">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US09</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Ranking setorial</strong>
+        <p>Ordena os setores por desempenho em sustentabilidade para destacar quem evoluiu mais e onde o esforço ainda precisa crescer.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navega&ccedil;&atilde;o principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link is-active">Ranking setorial</a>
+        <a href="previsao-fatura.html" class="sidebar-link">Previs&atilde;o de fatura</a>
+        <a href="ranking-custos.html" class="sidebar-link">Ranking de custos</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Leitura executiva</span>
+        <p>O ranking simplifica a comparação entre setores e ajuda a priorizar reconhecimento, suporte e correções.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero ranking-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US09</span>
+          <h1>Ranking setorial de sustentabilidade com leitura r&aacute;pida de desempenho.</h1>
+          <p>Veja quais setores lideram em efici&ecirc;ncia, qual a pontua&ccedil;&atilde;o geral de sustentabilidade e onde a opera&ccedil;&atilde;o precisa de refor&ccedil;o.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Ciclo comparado</span>
+          <strong id="rankingCycleTitle">Mar&ccedil;o de 2026</strong>
+          <span id="rankingCycleSubtitle">Matriz e filiais consolidadas</span>
+          <div class="hero-card-meta">
+            <span id="rankingChampion">L&iacute;der atual: Refrigera&ccedil;&atilde;o</span>
+            <span id="rankingAverage">M&eacute;dia geral 0 pts</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="rankingPeriodSelect">Per&iacute;odo do ranking</label>
+          <div class="dashboard-select">
+            <select id="rankingPeriodSelect" aria-label="Selecionar período do ranking">
+              <option value="2026-01">Janeiro de 2026</option>
+              <option value="2026-02">Fevereiro de 2026</option>
+              <option value="2026-03" selected>Mar&ccedil;o de 2026</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="rankingViewSelect">Vis&atilde;o do ranking</label>
+          <div class="dashboard-select">
+            <select id="rankingViewSelect" aria-label="Selecionar visão do ranking">
+              <option value="score" selected>Ranking geral</option>
+              <option value="efficiency">Efici&ecirc;ncia energ&eacute;tica</option>
+              <option value="engagement">Engajamento operacional</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-message" id="rankingStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid ranking-metrics" aria-label="Indicadores do ranking setorial">
+        <article class="metric-card">
+          <span class="metric-label">Melhor setor</span>
+          <strong class="metric-value" id="rankingTopSector">-</strong>
+          <p class="metric-helper">Setor com melhor score consolidado no ciclo.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Maior evolu&ccedil;&atilde;o</span>
+          <strong class="metric-value" id="rankingBiggestGain">0 pts</strong>
+          <p class="metric-helper">Ganho mais expressivo frente ao ciclo anterior.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Setores em risco</span>
+          <strong class="metric-value" id="rankingRiskCount">0</strong>
+          <p class="metric-helper">Setores abaixo da faixa desejada de sustentabilidade.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Pontua&ccedil;&atilde;o m&eacute;dia</span>
+          <strong class="metric-value" id="rankingAverageScore">0 pts</strong>
+          <p class="metric-helper">M&eacute;dia de sustentabilidade entre todos os setores.</p>
+        </article>
+      </section>
+
+      <section class="ranking-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">P&oacute;dio setorial</span>
+              <h2>Ranking de sustentabilidade</h2>
+            </div>
+          </div>
+
+          <div class="leaderboard-list" id="rankingLeaderboard">
+            <div class="leaderboard-row">
+              <span>Carregando ranking...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Top 3</span>
+              <h2>Destaques do ciclo</h2>
+            </div>
+          </div>
+
+          <div class="podium-grid" id="rankingPodium">
+            <div class="podium-card">
+              <span>Carregando p&oacute;dio...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Diagn&oacute;stico consolidado</span>
+              <h2>Setores, score e leitura operacional</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Setor</th>
+                  <th>Score</th>
+                  <th>Efici&ecirc;ncia</th>
+                  <th>Engajamento</th>
+                  <th>Evolu&ccedil;&atilde;o</th>
+                  <th>Leitura</th>
+                </tr>
+              </thead>
+              <tbody id="rankingTableBody">
+                <tr>
+                  <td colspan="6">Carregando tabela...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Recomenda&ccedil;&otilde;es</span>
+              <h2>A&ccedil;&otilde;es para o pr&oacute;ximo ciclo</h2>
+            </div>
+          </div>
+
+          <ul class="insight-list" id="rankingInsights">
+            <li>Carregando recomenda&ccedil;&otilde;es...</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

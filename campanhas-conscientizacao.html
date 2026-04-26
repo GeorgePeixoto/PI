@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Campanhas de Conscientiza&ccedil;&atilde;o</title>
+  <meta name="description" content="Marque campanhas de conscientização e compare indicadores antes e depois para medir o impacto comportamental no consumo de energia.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page campaign-page" data-page="campaign">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US08</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Campanhas de conscientiza&ccedil;&atilde;o</strong>
+        <p>Marque a data das campanhas e compare o comportamento energ&eacute;tico antes e depois para validar impacto real.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navega&ccedil;&atilde;o principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link is-active">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="previsao-fatura.html" class="sidebar-link">Previs&atilde;o de fatura</a>
+        <a href="ranking-custos.html" class="sidebar-link">Ranking de custos</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Objetivo da an&aacute;lise</span>
+        <p>Mostrar se a campanha reduziu desperd&iacute;cio e em quais setores o comportamento mudou de forma mensur&aacute;vel.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero campaign-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US08</span>
+          <h1>Compare o consumo antes e depois das campanhas de conscientiza&ccedil;&atilde;o.</h1>
+          <p>Selecione uma campanha, veja a data de ativa&ccedil;&atilde;o, acompanhe a varia&ccedil;&atilde;o no consumo e identifique quais setores responderam melhor ao incentivo comportamental.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Campanha selecionada</span>
+          <strong id="campaignTitle">Feche a porta fria</strong>
+          <span id="campaignDate">Aplicada em 12/03/2026</span>
+          <div class="hero-card-meta">
+            <span id="campaignTarget">Foco: refrigera&ccedil;&atilde;o</span>
+            <span id="campaignReach">Alcance: 126 colaboradores</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="campaignSelect">Campanha analisada</label>
+          <div class="dashboard-select">
+            <select id="campaignSelect" aria-label="Selecionar campanha analisada">
+              <option value="cold-door" selected>Feche a porta fria</option>
+              <option value="night-shutdown">Desligue ao sair</option>
+              <option value="ac-setpoint">Temperatura consciente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="campaignSectorFilter">Filtro setorial</label>
+          <div class="dashboard-select">
+            <select id="campaignSectorFilter" aria-label="Selecionar filtro setorial da campanha">
+              <option value="all" selected>Todos os setores</option>
+              <option value="refrigeracao">Refrigera&ccedil;&atilde;o</option>
+              <option value="climatizacao">Climatiza&ccedil;&atilde;o</option>
+              <option value="operacao">Opera&ccedil;&atilde;o de loja</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-message" id="campaignStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid campaign-metrics" aria-label="Indicadores de impacto da campanha">
+        <article class="metric-card">
+          <span class="metric-label">Consumo antes</span>
+          <strong class="metric-value" id="campaignBefore">0 kWh</strong>
+          <p class="metric-helper">M&eacute;dia no per&iacute;odo anterior &agrave; campanha.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Consumo depois</span>
+          <strong class="metric-value" id="campaignAfter">0 kWh</strong>
+          <p class="metric-helper">M&eacute;dia no per&iacute;odo ap&oacute;s a ativa&ccedil;&atilde;o da campanha.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Varia&ccedil;&atilde;o percentual</span>
+          <strong class="metric-value" id="campaignDelta">0%</strong>
+          <p class="metric-helper">Mudança consolidada entre o antes e o depois.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Ades&atilde;o reportada</span>
+          <strong class="metric-value" id="campaignEngagement">0%</strong>
+          <p class="metric-helper">Percentual da equipe que confirmou a rotina proposta.</p>
+        </article>
+      </section>
+
+      <section class="campaign-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Comparativo visual</span>
+              <h2>Antes x depois da campanha</h2>
+            </div>
+          </div>
+
+          <div class="compare-bars" id="campaignCompareBars">
+            <div class="compare-bar-card">
+              <span>Carregando comparativo...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Linha do tempo</span>
+              <h2>Marcos da campanha</h2>
+            </div>
+          </div>
+
+          <div class="milestone-list" id="campaignMilestones">
+            <div class="milestone-item">
+              <span>Carregando marcos...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Setores impactados</span>
+              <h2>Setores com maior resposta ap&oacute;s a campanha</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Setor</th>
+                  <th>Antes</th>
+                  <th>Depois</th>
+                  <th>Varia&ccedil;&atilde;o</th>
+                  <th>Leitura</th>
+                  <th>A&ccedil;&atilde;o seguinte</th>
+                </tr>
+              </thead>
+              <tbody id="campaignSectorTableBody">
+                <tr>
+                  <td colspan="6">Carregando setores...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Resumo r&aacute;pido</span>
+              <h2>Efeitos observados</h2>
+            </div>
+          </div>
+
+          <ul class="insight-list" id="campaignInsights">
+            <li>Carregando insights...</li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Diagn&oacute;stico de Desperd&iacute;cio</title>
+  <meta name="description" content="Visualize gr&aacute;fico e alertas de consumo fora do hor&aacute;rio na madrugada para identificar equipamentos esquecidos ligados no Lumem Flow.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page waste-page" data-page="waste">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US07</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Diagn&oacute;stico comportamental</strong>
+        <p>Monitora a madrugada, exibe o gr&aacute;fico de consumo fora do hor&aacute;rio e aponta equipamentos possivelmente esquecidos ligados.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navega&ccedil;&atilde;o principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link is-active">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Leitura operacional</span>
+        <p>O foco deste MVP &eacute; encontrar consumo anormal fora do hor&aacute;rio, com trilha clara para investigar equipamentos esquecidos.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero waste-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US07</span>
+          <h1>Gr&aacute;fico da madrugada com alerta de consumo fora do hor&aacute;rio.</h1>
+          <p>Compare a curva de consumo entre meia-noite e 6h, visualize os picos anormais e identifique quais equipamentos provavelmente ficaram ligados sem necessidade.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Leitura monitorada</span>
+          <strong id="nightProfileTitle">Madrugada de 20/03/2026</strong>
+          <span id="nightProfileStore">Loja matriz | Unidade 01</span>
+          <div class="hero-card-meta">
+            <span id="nightBaseBand">Faixa ideal 35-55 kW</span>
+            <span id="nightAlertWindow">Janela cr&iacute;tica 02h-04h</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="nightProfileSelect">Madrugada analisada</label>
+          <div class="dashboard-select">
+            <select id="nightProfileSelect" aria-label="Selecionar madrugada analisada">
+              <option value="2026-03-18">18 para 19 de mar&ccedil;o</option>
+              <option value="2026-03-19">19 para 20 de mar&ccedil;o</option>
+              <option value="2026-03-20" selected>20 para 21 de mar&ccedil;o</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="nightFocusSelect">Foco da investiga&ccedil;&atilde;o</label>
+          <div class="dashboard-select">
+            <select id="nightFocusSelect" aria-label="Selecionar foco da investigação">
+              <option value="all" selected>Todos os equipamentos</option>
+              <option value="refrigeracao">Refrigera&ccedil;&atilde;o</option>
+              <option value="climatizacao">Climatiza&ccedil;&atilde;o</option>
+              <option value="padaria">Padaria e apoio</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-message" id="nightWasteStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid waste-metrics" aria-label="Indicadores de desperdício noturno">
+        <article class="metric-card metric-card-alert">
+          <span class="metric-label">Consumo fora do hor&aacute;rio</span>
+          <strong class="metric-value" id="wasteOffHours">0 kWh</strong>
+          <p class="metric-helper">Energia acima da faixa ideal acumulada na madrugada.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Maior pico noturno</span>
+          <strong class="metric-value" id="wastePeak">0 kW</strong>
+          <p class="metric-helper">Ponto m&aacute;ximo registrado entre 0h e 6h.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Alertas disparados</span>
+          <strong class="metric-value" id="wasteAlertCount">0</strong>
+          <p class="metric-helper">Hor&aacute;rios que excederam o limite esperado.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Economia potencial</span>
+          <strong class="metric-value" id="wastePotential">R$ 0</strong>
+          <p class="metric-helper">Estimativa de corte se os equipamentos forem desligados no tempo certo.</p>
+        </article>
+      </section>
+
+      <section class="waste-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Gr&aacute;fico da madrugada</span>
+              <h2>Curva hor&aacute;ria com pontos anormais</h2>
+            </div>
+          </div>
+
+          <div class="night-chart-card">
+            <div class="chart-legend">
+              <span><i class="legend-dot actual-dot"></i>Consumo real</span>
+              <span><i class="legend-dot goal-dot"></i>Faixa ideal</span>
+              <span><i class="legend-dot danger-dot"></i>Pico anormal</span>
+            </div>
+
+            <div class="night-chart-shell">
+              <svg id="nightWasteChart" class="night-chart" viewBox="0 0 760 320" role="img" aria-label="Gráfico da madrugada com consumo hora a hora">
+                <g id="nightGrid"></g>
+                <g id="nightIdealBand"></g>
+                <polyline id="nightLine" class="night-line" points=""></polyline>
+                <g id="nightMarkers"></g>
+                <g id="nightAxis"></g>
+              </svg>
+            </div>
+
+            <div class="chart-footnote" id="nightChartNarrative">Carregando leitura de desperd&iacute;cio noturno.</div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Alertas da noite</span>
+              <h2>Faixas hor&aacute;rias suspeitas</h2>
+            </div>
+          </div>
+
+          <ul class="waste-alert-list" id="nightAlertList">
+            <li>Carregando alertas...</li>
+          </ul>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Equipamentos suspeitos</span>
+              <h2>Itens possivelmente esquecidos ligados</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Equipamento</th>
+                  <th>Setor</th>
+                  <th>Carga</th>
+                  <th>&Uacute;ltima atividade</th>
+                  <th>Probabilidade</th>
+                  <th>A&ccedil;&atilde;o sugerida</th>
+                </tr>
+              </thead>
+              <tbody id="nightSuspectTableBody">
+                <tr>
+                  <td colspan="6">Carregando equipamentos...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Linha do tempo</span>
+              <h2>Resumo por hor&aacute;rio</h2>
+            </div>
+          </div>
+
+          <div class="time-pulse-list" id="nightTimeline">
+            <div class="time-pulse-item">
+              <span>Carregando resumo...</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

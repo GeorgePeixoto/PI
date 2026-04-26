@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Painel da Transpar&ecirc;ncia</title>
+  <meta name="description" content="Acompanhe o Painel da Transpar&ecirc;ncia em tempo real com status por setor, alertas visuais verde/amarelo/vermelho e recomenda&ccedil;&otilde;es de corre&ccedil;&atilde;o imediata.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page transparency-page" data-page="transparency">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US06</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">M&oacute;dulo ativo</span>
+        <strong>Painel da Transpar&ecirc;ncia</strong>
+        <p>Leitura em tempo real por setor com c&oacute;digo visual para corre&ccedil;&atilde;o operacional imediata.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navega&ccedil;&atilde;o principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link is-active">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Objetivo do MVP</span>
+        <p>Expor situa&ccedil;&otilde;es cr&iacute;ticas por setor em verde, amarelo e vermelho para orientar rea&ccedil;&atilde;o r&aacute;pida da equipe.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero transparency-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US06</span>
+          <h1>Painel da Transpar&ecirc;ncia com leitura operacional em tempo real.</h1>
+          <p>O painel sintetiza o comportamento energ&eacute;tico por setor, destaca desvios em amarelo ou vermelho e recomenda a a&ccedil;&atilde;o imediata para a equipe de opera&ccedil;&otilde;es.</p>
+        </div>
+
+        <div class="report-hero-card transparency-hero-card">
+          <span class="hero-card-label">Atualiza&ccedil;&atilde;o ao vivo</span>
+          <strong id="transparencyTimestamp">Atualizado agora</strong>
+          <span id="transparencyStore">Loja matriz | Unidade 01</span>
+          <div class="hero-card-meta">
+            <span id="transparencyWindow">Janela de 5 minutos</span>
+            <span id="transparencyPeak">Pico atual 0 kW</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="status-message" id="transparencyStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid transparency-metrics" aria-label="Resumo do painel de transpar&ecirc;ncia">
+        <article class="metric-card">
+          <span class="metric-label">Setores est&aacute;veis</span>
+          <strong class="metric-value" id="transparencyGreenCount">0</strong>
+          <p class="metric-helper">Setores em verde, dentro da faixa ideal de consumo.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Setores em aten&ccedil;&atilde;o</span>
+          <strong class="metric-value" id="transparencyYellowCount">0</strong>
+          <p class="metric-helper">Setores em amarelo, pedindo ajuste de comportamento ou carga.</p>
+        </article>
+
+        <article class="metric-card metric-card-alert">
+          <span class="metric-label">Setores cr&iacute;ticos</span>
+          <strong class="metric-value" id="transparencyRedCount">0</strong>
+          <p class="metric-helper">Setores em vermelho, com desperd&iacute;cio ou sobrecarga imediata.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Consumo instant&acirc;neo</span>
+          <strong class="metric-value" id="transparencyLiveConsumption">0 kW</strong>
+          <p class="metric-helper">Soma instant&acirc;nea das leituras setoriais no momento.</p>
+        </article>
+      </section>
+
+      <section class="toolbar-card transparency-toolbar">
+        <div class="toolbar-group">
+          <label for="transparencyMode">Vis&atilde;o operacional</label>
+          <div class="dashboard-select">
+            <select id="transparencyMode" aria-label="Selecionar modo operacional">
+              <option value="live" selected>Tempo real</option>
+              <option value="review">Revis&atilde;o da &uacute;ltima leitura</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group toolbar-actions">
+          <button type="button" class="btn-secondary" id="refreshTransparency">Atualizar agora</button>
+          <div class="live-indicator" id="liveIndicator">
+            <span class="live-dot"></span>
+            <span>Atualiza&ccedil;&atilde;o autom&aacute;tica ativa</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="transparency-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Leitura por setor</span>
+              <h2>Mapa de transpar&ecirc;ncia operacional</h2>
+            </div>
+          </div>
+
+          <div class="sector-grid" id="transparencySectorGrid">
+            <article class="sector-card">
+              <p>Carregando setores...</p>
+            </article>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Fila de a&ccedil;&atilde;o</span>
+              <h2>Prioridades imediatas</h2>
+            </div>
+          </div>
+
+          <ul class="incident-feed" id="incidentFeed">
+            <li>Carregando fila...</li>
+          </ul>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Leitura comparativa</span>
+              <h2>Intensidade instant&acirc;nea por setor</h2>
+            </div>
+          </div>
+
+          <div class="heat-columns" id="transparencyBars">
+            <div class="heat-column">
+              <span>Carregando visualiza&ccedil;&atilde;o...</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

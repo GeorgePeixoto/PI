@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Ranking de Custos</title>
+  <meta name="description" content="Veja o ranking de custos por setor e equipamento principal para identificar onde cortar gastos com mais impacto.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page cost-page" data-page="cost">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <div class="dashboard-shell">
+    <aside class="dashboard-sidebar">
+      <div class="dashboard-brand">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg viewBox="0 0 24 24" fill="white" stroke="none" aria-hidden="true">
+              <path d="M13 3L5 13h7l-1 8 9-11h-7l1-8z"/>
+            </svg>
+          </div>
+          <span class="logo-text">Lumem Flow</span>
+        </div>
+        <span class="dashboard-badge">US11</span>
+      </div>
+
+      <div class="sidebar-block">
+        <span class="sidebar-label">Módulo ativo</span>
+        <strong>Ranking de custos</strong>
+        <p>Ordena custos por setor e equipamento principal para revelar rapidamente onde a operação pode cortar gasto com mais retorno.</p>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Navegação principal">
+        <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
+        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
+        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperdício na madrugada</a>
+        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
+        <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
+        <a href="previsao-fatura.html" class="sidebar-link">Previsão de fatura</a>
+        <a href="ranking-custos.html" class="sidebar-link is-active">Ranking de custos</a>
+        <a href="index.html" class="sidebar-link">Voltar ao login</a>
+        <a href="termos.html" class="sidebar-link">Termos de uso</a>
+      </nav>
+
+      <div class="sidebar-footnote">
+        <span>Leitura financeira</span>
+        <p>Use o ranking para descobrir onde cortar primeiro sem depender de análise demorada setor por setor.</p>
+      </div>
+    </aside>
+
+    <main class="dashboard-main">
+      <header class="report-hero cost-hero">
+        <div class="report-hero-copy">
+          <span class="eyebrow">US11</span>
+          <h1>Ranking simples de custos por setor e equipamento principal.</h1>
+          <p>Veja quem pesa mais na conta, compare o impacto financeiro entre setores e foque primeiro nos equipamentos que mais puxam o custo total.</p>
+        </div>
+
+        <div class="report-hero-card">
+          <span class="hero-card-label">Recorte financeiro</span>
+          <strong id="costCycleTitle">Mar&ccedil;o de 2026</strong>
+          <span id="costCycleSubtitle">Custos consolidados por setor</span>
+          <div class="hero-card-meta">
+            <span id="costTopLabel">Maior custo: Refrigeração</span>
+            <span id="costTotalLabel">Total monitorado R$ 0</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="toolbar-card">
+        <div class="toolbar-group">
+          <label for="costPeriodSelect">Período analisado</label>
+          <div class="dashboard-select">
+            <select id="costPeriodSelect" aria-label="Selecionar período de custos">
+              <option value="2026-01">Janeiro de 2026</option>
+              <option value="2026-02">Fevereiro de 2026</option>
+              <option value="2026-03" selected>Mar&ccedil;o de 2026</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="costViewSelect">Classificar por</label>
+          <div class="dashboard-select">
+            <select id="costViewSelect" aria-label="Selecionar visão do ranking de custos">
+              <option value="sector" selected>Setores</option>
+              <option value="equipment">Equipamentos</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <div class="status-message" id="costStatus" aria-live="polite"></div>
+
+      <section class="metrics-grid cost-metrics" aria-label="Indicadores do ranking de custos">
+        <article class="metric-card">
+          <span class="metric-label">Maior centro de custo</span>
+          <strong class="metric-value" id="costTopEntity">-</strong>
+          <p class="metric-helper">Item líder em gasto no recorte atual.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Participação do líder</span>
+          <strong class="metric-value" id="costTopShare">0%</strong>
+          <p class="metric-helper">Quanto o primeiro colocado representa no total.</p>
+        </article>
+
+        <article class="metric-card metric-card-warning">
+          <span class="metric-label">Itens acima da média</span>
+          <strong class="metric-value" id="costAboveAverage">0</strong>
+          <p class="metric-helper">Itens que já merecem plano de corte prioritário.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Custo médio</span>
+          <strong class="metric-value" id="costAverageValue">R$ 0</strong>
+          <p class="metric-helper">Valor médio entre os itens ranqueados.</p>
+        </article>
+      </section>
+
+      <section class="cost-board">
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Ranking principal</span>
+              <h2>Quem mais pesa na conta</h2>
+            </div>
+          </div>
+
+          <div class="leaderboard-list" id="costLeaderboard">
+            <div class="leaderboard-row">
+              <span>Carregando ranking...</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Corte rápido</span>
+              <h2>Prioridades de redução</h2>
+            </div>
+          </div>
+
+          <ul class="insight-list" id="costInsights">
+            <li>Carregando prioridades...</li>
+          </ul>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Diagnóstico financeiro</span>
+              <h2>Custos detalhados por item</h2>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Categoria</th>
+                  <th>Custo</th>
+                  <th>Participação</th>
+                  <th>Variação</th>
+                  <th>Leitura</th>
+                </tr>
+              </thead>
+              <tbody id="costTableBody">
+                <tr>
+                  <td colspan="6">Carregando tabela...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Visual de impacto</span>
+              <h2>Distribuição do custo</h2>
+            </div>
+          </div>
+
+          <div class="compare-bars" id="costBars">
+            <div class="compare-bar-card">
+              <span>Carregando visual...</span>
+            </div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
