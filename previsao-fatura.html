@@ -45,41 +45,30 @@
           </div>
           <span class="logo-text">Lumem Flow</span>
         </div>
-        <span class="dashboard-badge">US10</span>
       </div>
 
       <div class="sidebar-block">
         <span class="sidebar-label">M&oacute;dulo ativo</span>
         <strong>Previs&atilde;o de fatura</strong>
-        <p>Transforma o consumo acumulado em estimativa financeira quase em tempo real para ajustar orçamento antes do fechamento.</p>
       </div>
 
       <nav class="sidebar-nav" aria-label="Navegação principal">
         <a href="relatorio-esg.html" class="sidebar-link">Relat&oacute;rio mensal</a>
-        <a href="painel-transparencia.html" class="sidebar-link">Painel da Transpar&ecirc;ncia</a>
-        <a href="diagnostico-desperdicio.html" class="sidebar-link">Desperd&iacute;cio na madrugada</a>
-        <a href="campanhas-conscientizacao.html" class="sidebar-link">Campanhas</a>
         <a href="ranking-setorial.html" class="sidebar-link">Ranking setorial</a>
         <a href="previsao-fatura.html" class="sidebar-link is-active">Previs&atilde;o de fatura</a>
-        <a href="ranking-custos.html" class="sidebar-link">Ranking de custos</a>
         <a href="relatorio-conformidade.html" class="sidebar-link">Relat&oacute;rio de conformidade</a>
         <a href="deteccao-anomalias.html" class="sidebar-link">Detec&ccedil;&atilde;o de anomalias</a>
         <a href="index.html" class="sidebar-link">Voltar ao login</a>
         <a href="termos.html" class="sidebar-link">Termos de uso</a>
       </nav>
 
-      <div class="sidebar-footnote">
-        <span>Uso executivo</span>
-        <p>O módulo estima a fatura atual com base em kWh, tarifa e tendência diária para ajudar o diretor financeiro a agir antes do estouro.</p>
-      </div>
     </aside>
 
     <main class="dashboard-main">
       <header class="report-hero forecast-hero">
         <div class="report-hero-copy">
-          <span class="eyebrow">US10</span>
-          <h1>Estimativa reativa da fatura mensal com base em kWh e tarifa.</h1>
-          <p>Acompanhe o consumo acumulado, veja a proje&ccedil;&atilde;o de fechamento do m&ecirc;s e compare a previs&atilde;o com o orçamento antes que a fatura fique fora de controle.</p>
+          <h1>Previs&atilde;o de fatura</h1>
+          <p>Consumo acumulado, proje&ccedil;&atilde;o de fechamento e compara&ccedil;&atilde;o com o or&ccedil;amento.</p>
         </div>
 
         <div class="report-hero-card">
@@ -95,12 +84,25 @@
 
       <section class="toolbar-card">
         <div class="toolbar-group">
-          <label for="forecastMonthSelect">M&ecirc;s da previsão</label>
+          <label for="forecastViewSelect">Visualiza&ccedil;&atilde;o</label>
           <div class="dashboard-select">
-            <select id="forecastMonthSelect" aria-label="Selecionar mês da previsão">
+            <select id="forecastViewSelect" aria-label="Selecionar visualiza&ccedil;&atilde;o">
+              <option value="monthly" selected>Mensal</option>
+              <option value="weekly">Semanal</option>
+              <option value="daily">Di&aacute;rio</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="toolbar-group">
+          <label for="forecastMonthSelect">Per&iacute;odo</label>
+          <div class="dashboard-select">
+            <select id="forecastMonthSelect" aria-label="Selecionar m&ecirc;s da previs&atilde;o">
               <option value="2026-01">Janeiro de 2026</option>
               <option value="2026-02">Fevereiro de 2026</option>
-              <option value="2026-03" selected>Mar&ccedil;o de 2026</option>
+              <option value="2026-03">Mar&ccedil;o de 2026</option>
+              <option value="2026-04">Abril de 2026</option>
+              <option value="2026-05" selected>Maio de 2026</option>
             </select>
           </div>
         </div>
@@ -108,7 +110,7 @@
         <div class="toolbar-group">
           <label for="forecastTariffSelect">Perfil tarif&aacute;rio</label>
           <div class="dashboard-select">
-            <select id="forecastTariffSelect" aria-label="Selecionar perfil tarifário">
+            <select id="forecastTariffSelect" aria-label="Selecionar perfil tarif&aacute;rio">
               <option value="green" selected>Horo-sazonal verde</option>
               <option value="blue">Horo-sazonal azul</option>
               <option value="flat">Convencional</option>
@@ -119,29 +121,37 @@
 
       <div class="status-message" id="forecastStatus" aria-live="polite"></div>
 
-      <section class="metrics-grid forecast-metrics" aria-label="Indicadores da previsão financeira">
+      <section class="metrics-grid forecast-metrics" aria-label="Indicadores da previs&atilde;o financeira">
         <article class="metric-card">
           <span class="metric-label">Consumo acumulado</span>
           <strong class="metric-value" id="forecastAccumulatedKwh">0 kWh</strong>
-          <p class="metric-helper">kWh já registrados no ciclo atual.</p>
         </article>
 
         <article class="metric-card">
           <span class="metric-label">Fatura estimada</span>
           <strong class="metric-value" id="forecastProjectedBill">R$ 0</strong>
-          <p class="metric-helper">Projeção com base na tendência diária e tarifa atual.</p>
         </article>
 
         <article class="metric-card metric-card-warning">
-          <span class="metric-label">Desvio vs orçamento</span>
+          <span class="metric-label">Desvio vs or&ccedil;amento</span>
           <strong class="metric-value" id="forecastBudgetDelta">R$ 0</strong>
-          <p class="metric-helper">Diferença esperada entre previsão e limite orçado.</p>
         </article>
 
         <article class="metric-card">
           <span class="metric-label">Fechamento previsto</span>
           <strong class="metric-value" id="forecastCommitment">0%</strong>
-          <p class="metric-helper">Percentual do orçamento que tende a ser consumido.</p>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Custo estimado hoje</span>
+          <strong class="metric-value" id="forecastDailyCost">R$ 0</strong>
+          <span class="metric-sublabel" id="forecastDailyKwh"></span>
+        </article>
+
+        <article class="metric-card">
+          <span class="metric-label">Tarifa m&eacute;dia ponderada</span>
+          <strong class="metric-value" id="forecastAvgTariff">R$ 0</strong>
+          <span class="metric-sublabel" id="forecastTariffFlag"></span>
         </article>
       </section>
 
@@ -186,8 +196,40 @@
         <article class="report-card report-card-wide">
           <div class="card-head">
             <div>
-              <span class="card-kicker">Simulação do mês</span>
-              <h2>Itens que mais puxam a previsão</h2>
+              <span class="card-kicker">Evolu&ccedil;&atilde;o de custo</span>
+              <h2 id="forecastProgressTitle">Custo estimado por per&iacute;odo</h2>
+            </div>
+          </div>
+
+          <div class="forecast-progress-area">
+            <div class="compliance-bars" id="forecastProgressBars">
+              <div class="compliance-bar-group"><span>Carregando...</span></div>
+            </div>
+            <div class="meter-legend" style="margin-top:12px">
+              <span><i class="legend-dot actual-dot"></i>Custo estimado</span>
+              <span><i class="legend-dot goal-dot"></i>Or&ccedil;amento proporcional</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="report-card">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Simula&ccedil;&atilde;o de cen&aacute;rio</span>
+              <h2>Proje&ccedil;&atilde;o de fechamento</h2>
+            </div>
+          </div>
+
+          <div class="compliance-summary-list" id="forecastScenario">
+            <div class="compliance-summary-item"><span>Carregando cen&aacute;rio...</span></div>
+          </div>
+        </article>
+
+        <article class="report-card report-card-wide">
+          <div class="card-head">
+            <div>
+              <span class="card-kicker">Composi&ccedil;&atilde;o tarif&aacute;ria</span>
+              <h2>Itens que mais puxam a previs&atilde;o</h2>
             </div>
           </div>
 
@@ -199,7 +241,7 @@
                   <th>Consumo</th>
                   <th>Tarifa aplicada</th>
                   <th>Custo estimado</th>
-                  <th>Participação</th>
+                  <th>Participa&ccedil;&atilde;o</th>
                   <th>Leitura</th>
                 </tr>
               </thead>
@@ -215,13 +257,13 @@
         <article class="report-card">
           <div class="card-head">
             <div>
-              <span class="card-kicker">Ajuste de orçamento</span>
-              <h2>Próximas decisões</h2>
+              <span class="card-kicker">Ajuste de or&ccedil;amento</span>
+              <h2>Pr&oacute;ximas decis&otilde;es</h2>
             </div>
           </div>
 
           <ul class="insight-list" id="forecastInsights">
-            <li>Carregando recomendações...</li>
+            <li>Carregando recomenda&ccedil;&otilde;es...</li>
           </ul>
         </article>
       </section>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumem Flow - Selecionar Setor</title>
+  <meta name="description" content="Selecione o setor que deseja monitorar no dashboard Lumem Flow.">
+  <meta name="theme-color" content="#123845">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%23bf8b46'/%3E%3Cpath d='M13 3L5 13h7l-1 8 9-11h-7l1-8z' fill='white'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page sector-select-page" data-page="sector-select">
+  <div class="theme-toggle">
+    <button class="theme-toggle-track" id="themeToggle" aria-label="Alternar tema">
+      <div class="theme-toggle-knob">
+        <svg class="theme-toggle-icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+        <svg class="theme-toggle-icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </div>
+    </button>
+  </div>
+
+  <main class="sector-select-shell">
+    <aside class="sector-select-hero" aria-label="Empresa monitorada">
+      <div class="sector-company-brand">
+        <div class="sector-company-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4.1"></circle>
+            <circle cx="12" cy="3.5" r="1.4"></circle>
+            <circle cx="19.3" cy="7.2" r="1.4"></circle>
+            <circle cx="19.3" cy="16.8" r="1.4"></circle>
+            <circle cx="12" cy="20.5" r="1.4"></circle>
+            <circle cx="4.7" cy="16.8" r="1.4"></circle>
+            <circle cx="4.7" cy="7.2" r="1.4"></circle>
+            <path d="M12 7.9V5.1M15.7 9.6l2.2-1.3M15.7 14.4l2.2 1.3M12 16.1v2.8M8.3 14.4l-2.2 1.3M8.3 9.6L6.1 8.3"></path>
+          </svg>
+        </div>
+
+        <div class="sector-company-copy">
+          <span class="sector-company-label">Empresa monitorada</span>
+          <strong class="sector-company-name">Atacad&atilde;o Horizonte Sul</strong>
+          <p>Selecione o setor que deve abrir o dashboard com contexto imediato de risco e desempenho.</p>
+        </div>
+      </div>
+
+      <div class="sector-company-legend" aria-label="Legenda de severidade">
+        <span class="sector-company-legend-title">Leitura de severidade</span>
+
+        <div class="sector-legend-item is-critical">
+          <span class="sector-legend-dot"></span>
+          <span>Vermelho: a&ccedil;&atilde;o priorit&aacute;ria</span>
+        </div>
+
+        <div class="sector-legend-item is-warning">
+          <span class="sector-legend-dot"></span>
+          <span>Amarelo: inconsist&ecirc;ncia em acompanhamento</span>
+        </div>
+
+        <div class="sector-legend-item is-normal">
+          <span class="sector-legend-dot"></span>
+          <span>Claro: opera&ccedil;&atilde;o dentro do esperado</span>
+        </div>
+      </div>
+    </aside>
+
+    <section class="sector-select-panel" aria-labelledby="sectorSelectTitle">
+      <div class="sector-select-panel-head">
+        <div class="sector-select-panel-headline">
+          <span class="sector-select-step">Central de alerta</span>
+          <h1 id="sectorSelectTitle">Escolha o setor</h1>
+        </div>
+        <p>Use a severidade atual como base e selecione o cart&atilde;o que deve entrar primeiro no painel.</p>
+      </div>
+
+      <div class="status-message" id="sectorStatus" aria-live="polite"></div>
+
+      <div class="sector-grid" aria-label="Setores dispon&iacute;veis">
+        <button
+          class="sector-card is-critical"
+          type="button"
+          aria-pressed="false"
+          data-sector="refrigeracao"
+          data-name="Refrigera&ccedil;&atilde;o"
+          data-description="Degelo fora da janela, oscila&ccedil;&atilde;o de compressores e press&atilde;o cont&iacute;nua no hor&aacute;rio de ponta."
+          data-consumption="39.800 kWh/m&ecirc;s"
+          data-peak="17h &agrave;s 20h"
+          data-focus="Compressores, setpoints e degelo"
+          data-status-label="Muito inconsistente"
+          data-status-tone="error"
+          data-note-one="8 c&acirc;maras frias e 42 ilhas no circuito principal."
+          data-note-two="Turno de pico concentra o maior desvio de carga cont&iacute;nua."
+          data-note-three="Prioridade alta para redu&ccedil;&atilde;o imediata de consumo."
+          data-target="relatorio-esg.html">
+          <div class="sector-card-copy">
+            <span class="sector-card-kicker">Prioridade cr&iacute;tica</span>
+            <h3>Refrigera&ccedil;&atilde;o</h3>
+            <p>Degelo fora da janela, alta oscila&ccedil;&atilde;o dos compressores e impacto direto no custo energ&eacute;tico do turno.</p>
+          </div>
+
+          <div class="sector-card-foot">
+            <span class="sector-card-reading">39.800 kWh/m&ecirc;s</span>
+            <span class="sector-card-status-text">Status atual: muito inconsistente</span>
+          </div>
+        </button>
+
+        <button
+          class="sector-card is-warning"
+          type="button"
+          aria-pressed="false"
+          data-sector="iluminacao"
+          data-name="Ilumina&ccedil;&atilde;o"
+          data-description="Fachada, estacionamento e circuitos de perman&ecirc;ncia seguem acima da janela ideal no per&iacute;odo noturno."
+          data-consumption="20.820 kWh/m&ecirc;s"
+          data-peak="18h &agrave;s 22h"
+          data-focus="Circuitos de fachada e perman&ecirc;ncia"
+          data-status-label="Inconsistente"
+          data-status-tone="warning"
+          data-note-one="Fachada e estacionamento puxam o pico noturno."
+          data-note-two="Setor com alto potencial para automa&ccedil;&atilde;o por presen&ccedil;a."
+          data-note-three="Ganhos r&aacute;pidos com calend&aacute;rio e sensoriza&ccedil;&atilde;o."
+          data-target="relatorio-esg.html">
+          <div class="sector-card-copy">
+            <span class="sector-card-kicker">Aten&ccedil;&atilde;o operacional</span>
+            <h3>Ilumina&ccedil;&atilde;o</h3>
+            <p>Acionamento prolongado em fachada e estacionamento com sinais de desperd&iacute;cio fora da perman&ecirc;ncia ideal.</p>
+          </div>
+
+          <div class="sector-card-foot">
+            <span class="sector-card-reading">20.820 kWh/m&ecirc;s</span>
+            <span class="sector-card-status-text">Status atual: inconsistente</span>
+          </div>
+        </button>
+
+        <button
+          class="sector-card is-normal"
+          type="button"
+          aria-pressed="false"
+          data-sector="climatizacao"
+          data-name="Climatiza&ccedil;&atilde;o"
+          data-description="Setpoints e renova&ccedil;&atilde;o de ar seguem dentro da faixa prevista, sem sinais atuais de desvio relevante."
+          data-consumption="40.240 kWh/m&ecirc;s"
+          data-peak="13h &agrave;s 17h"
+          data-focus="Setpoints, renova&ccedil;&atilde;o de ar e conforto"
+          data-status-label="Normal"
+          data-status-tone="success"
+          data-note-one="Maior consumo consolidado, mas sem anomalia ativa no momento."
+          data-note-two="Sens&iacute;vel a temperatura externa e ocupa&ccedil;&atilde;o simult&acirc;nea."
+          data-note-three="Ajustes finos de setpoint seguem como frente de otimiza&ccedil;&atilde;o."
+          data-target="relatorio-esg.html">
+          <div class="sector-card-copy">
+            <span class="sector-card-kicker">Opera&ccedil;&atilde;o est&aacute;vel</span>
+            <h3>Climatiza&ccedil;&atilde;o</h3>
+            <p>Temperatura, renova&ccedil;&atilde;o de ar e conforto seguem em linha com o padr&atilde;o esperado da opera&ccedil;&atilde;o.</p>
+          </div>
+
+          <div class="sector-card-foot">
+            <span class="sector-card-reading">40.240 kWh/m&ecirc;s</span>
+            <span class="sector-card-status-text">Status atual: normal</span>
+          </div>
+        </button>
+
+        <button
+          class="sector-card is-normal"
+          type="button"
+          aria-pressed="false"
+          data-sector="docas"
+          data-name="Docas e carga"
+          data-description="Recarga, partidas e opera&ccedil;&atilde;o log&iacute;stica seguem sem desvio persistente fora da janela prevista."
+          data-consumption="17.760 kWh/m&ecirc;s"
+          data-peak="6h &agrave;s 9h"
+          data-focus="Recarga, partida de equipamentos e turnos"
+          data-status-label="Normal"
+          data-status-tone="success"
+          data-note-one="Primeiro turno concentra a maior intensidade operacional."
+          data-note-two="Desvios costumam aparecer em janelas de recarga simult&acirc;nea."
+          data-note-three="Bom setor para escalonar uso e preservar demanda de ponta."
+          data-target="relatorio-esg.html">
+          <div class="sector-card-copy">
+            <span class="sector-card-kicker">Fluxo controlado</span>
+            <h3>Docas e carga</h3>
+            <p>Recarga de baterias, partidas e movimenta&ccedil;&atilde;o seguem dentro da janela operacional prevista.</p>
+          </div>
+
+          <div class="sector-card-foot">
+            <span class="sector-card-reading">17.760 kWh/m&ecirc;s</span>
+            <span class="sector-card-status-text">Status atual: normal</span>
+          </div>
+        </button>
+
+        <button
+          class="sector-card is-normal"
+          type="button"
+          aria-pressed="false"
+          data-sector="administrativo"
+          data-name="Administrativo"
+          data-description="Base de TI, ocupa&ccedil;&atilde;o e perman&ecirc;ncia seguem com perfil regular e sem alerta ativo de desperd&iacute;cio."
+          data-consumption="9.360 kWh/m&ecirc;s"
+          data-peak="9h &agrave;s 11h"
+          data-focus="Base de carga, TI e ocupa&ccedil;&atilde;o"
+          data-status-label="Normal"
+          data-status-tone="success"
+          data-note-one="Menor consumo da opera&ccedil;&atilde;o, ideal para atacar desperd&iacute;cio residual."
+          data-note-two="CPD e perif&eacute;ricos mant&ecirc;m carga mesmo fora do expediente."
+          data-note-three="Bom setor para campanhas internas de desligamento inteligente."
+          data-target="relatorio-esg.html">
+          <div class="sector-card-copy">
+            <span class="sector-card-kicker">Monitoramento normal</span>
+            <h3>Administrativo</h3>
+            <p>Uso corporativo, TI e salas internas operam com carga previs&iacute;vel e sem desvio sens&iacute;vel.</p>
+          </div>
+
+          <div class="sector-card-foot">
+            <span class="sector-card-reading">9.360 kWh/m&ecirc;s</span>
+            <span class="sector-card-status-text">Status atual: normal</span>
+          </div>
+        </button>
+      </div>
+
+      <section class="sector-summary-card" id="selectedSectorSummary" aria-live="polite">
+        <div class="sector-summary-copy">
+          <span class="summary-kicker">Setor selecionado</span>
+          <strong id="selectedSectorName">Nenhum setor selecionado</strong>
+          <p id="selectedSectorDescription">Selecione um cart&atilde;o para carregar o contexto que ser&aacute; levado ao dashboard.</p>
+        </div>
+
+        <div class="sector-summary-metrics">
+          <div class="summary-metric">
+            <span>Status atual</span>
+            <strong id="selectedSectorSeverity">--</strong>
+          </div>
+
+          <div class="summary-metric">
+            <span>Consumo m&eacute;dio</span>
+            <strong id="selectedSectorConsumption">--</strong>
+          </div>
+
+          <div class="summary-metric">
+            <span>Janela cr&iacute;tica</span>
+            <strong id="selectedSectorPeak">--</strong>
+          </div>
+
+          <div class="summary-metric">
+            <span>Foco inicial</span>
+            <strong id="selectedSectorFocus">--</strong>
+          </div>
+        </div>
+
+        <ul class="sector-summary-notes" id="selectedSectorNotes">
+          <li>Escolha um setor para visualizar prioridade, janela cr&iacute;tica e foco inicial do acompanhamento.</li>
+        </ul>
+      </section>
+
+      <div class="sector-select-actions">
+        <a href="index.html" class="btn-secondary sector-back-link">Voltar ao login</a>
+        <button type="button" class="btn-primary dashboard-btn" id="continueSectorSelection" disabled>
+          <span class="btn-label">Continuar para o dashboard</span>
+          <span class="btn-spinner" aria-hidden="true"></span>
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

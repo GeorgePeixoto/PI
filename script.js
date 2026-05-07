@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.setTimeout(() => {
         handleSuccess(loginForm, 'Login validado com sucesso. A conta est\u00e1 pronta para prosseguir.');
         window.setTimeout(() => {
-          window.location.href = 'relatorio-esg.html';
+          window.location.href = 'selecao-setor.html';
         }, 900);
       }, 1400);
     });
@@ -502,6 +502,114 @@ document.addEventListener('DOMContentLoaded', () => {
         handleSuccess(forgotForm, 'Se o e-mail estiver cadastrado, enviaremos um link seguro de redefini\u00e7\u00e3o em instantes.');
       }, 1400);
     });
+  }
+
+  const sectorCards = [...document.querySelectorAll('.sector-card[data-sector]')];
+  if (sectorCards.length) {
+    const sectorStatus = document.getElementById('sectorStatus');
+    const selectedSectorSummary = document.getElementById('selectedSectorSummary');
+    const selectedSectorName = document.getElementById('selectedSectorName');
+    const selectedSectorDescription = document.getElementById('selectedSectorDescription');
+    const selectedSectorSeverity = document.getElementById('selectedSectorSeverity');
+    const selectedSectorConsumption = document.getElementById('selectedSectorConsumption');
+    const selectedSectorPeak = document.getElementById('selectedSectorPeak');
+    const selectedSectorFocus = document.getElementById('selectedSectorFocus');
+    const selectedSectorNotes = document.getElementById('selectedSectorNotes');
+    const continueSectorSelection = document.getElementById('continueSectorSelection');
+    const continueSectorLabel = continueSectorSelection ? continueSectorSelection.querySelector('.btn-label') : null;
+    let activeSectorCard = null;
+
+    function updateSectorNotes(card) {
+      if (!selectedSectorNotes) return;
+
+      const notes = ['noteOne', 'noteTwo', 'noteThree']
+        .map((key) => card.dataset[key])
+        .filter(Boolean);
+
+      selectedSectorNotes.innerHTML = notes.map((note) => `<li>${note}</li>`).join('');
+    }
+
+    function updateContinueLabel(name) {
+      if (!continueSectorLabel) return;
+      continueSectorLabel.textContent = name ? `Continuar com ${name}` : 'Continuar para o dashboard';
+    }
+
+    function selectSector(card, options = {}) {
+      const sectorHeading = card.querySelector('h3');
+      const sectorName = card.dataset.name || (sectorHeading ? sectorHeading.textContent : '') || 'Setor selecionado';
+      const statusLabel = card.dataset.statusLabel || 'Normal';
+      const statusTone = card.dataset.statusTone || 'success';
+
+      activeSectorCard = card;
+
+      sectorCards.forEach((sectorCard) => {
+        const isSelected = sectorCard === card;
+        sectorCard.classList.toggle('is-selected', isSelected);
+        sectorCard.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      });
+
+      if (selectedSectorName) selectedSectorName.textContent = sectorName;
+      if (selectedSectorDescription) selectedSectorDescription.textContent = card.dataset.description || '';
+      if (selectedSectorSeverity) selectedSectorSeverity.textContent = statusLabel;
+      if (selectedSectorConsumption) selectedSectorConsumption.textContent = card.dataset.consumption || '--';
+      if (selectedSectorPeak) selectedSectorPeak.textContent = card.dataset.peak || '--';
+      if (selectedSectorFocus) selectedSectorFocus.textContent = card.dataset.focus || '--';
+      if (selectedSectorSummary) selectedSectorSummary.dataset.tone = statusTone;
+
+      updateSectorNotes(card);
+      updateContinueLabel(sectorName);
+
+      if (continueSectorSelection) {
+        continueSectorSelection.disabled = false;
+      }
+
+      if (!options.silent && sectorStatus) {
+        setStandaloneStatus(sectorStatus, statusTone, `${sectorName} selecionado. Status atual: ${statusLabel}.`);
+      }
+    }
+
+    sectorCards.forEach((card) => {
+      card.addEventListener('click', () => selectSector(card));
+    });
+
+    if (continueSectorSelection) {
+      continueSectorSelection.addEventListener('click', () => {
+        if (!activeSectorCard) {
+          if (sectorStatus) {
+            setStandaloneStatus(sectorStatus, 'error', 'Selecione um setor para continuar.');
+          }
+          return;
+        }
+
+        const sectorName = activeSectorCard.dataset.name || '';
+        continueSectorSelection.classList.add('btn-loading');
+
+        sessionStorage.setItem('lumemflow-sector-id', activeSectorCard.dataset.sector || '');
+        sessionStorage.setItem('lumemflow-sector-name', sectorName);
+        sessionStorage.setItem('lumemflow-sector-description', activeSectorCard.dataset.description || '');
+        sessionStorage.setItem('lumemflow-sector-focus', activeSectorCard.dataset.focus || '');
+
+        window.setTimeout(() => {
+          window.location.href = activeSectorCard.dataset.target || 'relatorio-esg.html';
+        }, 550);
+      });
+    }
+
+    const storedSectorId = sessionStorage.getItem('lumemflow-sector-id');
+    const storedCard = storedSectorId
+      ? sectorCards.find((card) => card.dataset.sector === storedSectorId)
+      : null;
+
+    if (storedCard) {
+      selectSector(storedCard, { silent: true });
+      if (sectorStatus) {
+        const restoredTone = storedCard.dataset.statusTone || 'success';
+        const restoredStatus = storedCard.dataset.statusLabel || 'Normal';
+        setStandaloneStatus(sectorStatus, restoredTone, `Setor anterior restaurado: ${storedCard.dataset.name}. Status atual: ${restoredStatus}.`);
+      }
+    } else {
+      updateContinueLabel('');
+    }
   }
 
   const reportMonth = document.getElementById('reportMonth');
@@ -822,552 +930,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderReport(reportMonth.value);
   }
 
-  const transparencySectorGrid = document.getElementById('transparencySectorGrid');
-  if (transparencySectorGrid) {
-    const transparencyStatus = document.getElementById('transparencyStatus');
-    const transparencyTimestamp = document.getElementById('transparencyTimestamp');
-    const transparencyStore = document.getElementById('transparencyStore');
-    const transparencyWindow = document.getElementById('transparencyWindow');
-    const transparencyPeak = document.getElementById('transparencyPeak');
-    const transparencyGreenCount = document.getElementById('transparencyGreenCount');
-    const transparencyYellowCount = document.getElementById('transparencyYellowCount');
-    const transparencyRedCount = document.getElementById('transparencyRedCount');
-    const transparencyLiveConsumption = document.getElementById('transparencyLiveConsumption');
-    const incidentFeed = document.getElementById('incidentFeed');
-    const transparencyBars = document.getElementById('transparencyBars');
-    const transparencyMode = document.getElementById('transparencyMode');
-    const refreshTransparency = document.getElementById('refreshTransparency');
 
-    const transparencyFrames = [
-      {
-        timestamp: 'Atualizado agora',
-        store: 'Loja matriz | Unidade 01',
-        window: 'Janela de 5 minutos',
-        peak: 482,
-        sectors: [
-          { name: 'Refrigeração', area: 'Câmaras frias', kw: 142, threshold: 150, variance: -5.3, status: 'green', label: 'Verde', action: 'Manter portas fechadas e rotina atual.', note: 'Dentro da faixa operacional.' },
-          { name: 'Iluminação', area: 'Salão principal', kw: 74, threshold: 78, variance: -2.1, status: 'green', label: 'Verde', action: 'Sem ajuste necessário no momento.', note: 'Consumo estável para o turno.' },
-          { name: 'Docas', area: 'Carga e descarga', kw: 66, threshold: 60, variance: 10, status: 'yellow', label: 'Amarelo', action: 'Revisar equipamentos ligados fora da janela de carga.', note: 'Leve excesso na operação das docas.' },
-          { name: 'Climatização', area: 'Área de vendas', kw: 118, threshold: 103, variance: 14.6, status: 'red', label: 'Vermelho', action: 'Checar portas abertas e temperatura de setpoint.', note: 'Sobrecarga instantânea acima do limite ideal.' },
-          { name: 'Administrativo', area: 'Backoffice', kw: 38, threshold: 40, variance: -5, status: 'green', label: 'Verde', action: 'Operação aderente ao padrão.', note: 'Sem anomalias detectadas.' },
-          { name: 'Padaria', area: 'Forno e expositores', kw: 44, threshold: 42, variance: 4.8, status: 'yellow', label: 'Amarelo', action: 'Conferir expositores e resistência fora de pico.', note: 'Tendência de alta moderada.' }
-        ]
-      },
-      {
-        timestamp: 'Atualizado há 6 segundos',
-        store: 'Loja matriz | Unidade 01',
-        window: 'Janela de 5 minutos',
-        peak: 494,
-        sectors: [
-          { name: 'Refrigeração', area: 'Câmaras frias', kw: 145, threshold: 150, variance: -3.4, status: 'green', label: 'Verde', action: 'Manter rotina de fechamento.', note: 'Pequena oscilação esperada.' },
-          { name: 'Iluminação', area: 'Salão principal', kw: 76, threshold: 78, variance: -1.2, status: 'green', label: 'Verde', action: 'Sem intervenção imediata.', note: 'Painel luminoso em nível saudável.' },
-          { name: 'Docas', area: 'Carga e descarga', kw: 71, threshold: 60, variance: 18.3, status: 'red', label: 'Vermelho', action: 'Desligar esteiras ociosas e revisar compressor auxiliar.', note: 'Excesso persistente na operação das docas.' },
-          { name: 'Climatização', area: 'Área de vendas', kw: 112, threshold: 103, variance: 8.7, status: 'yellow', label: 'Amarelo', action: 'Ajustar setpoint e revisar portas de acesso.', note: 'Tensão reduziu, mas ainda pede atenção.' },
-          { name: 'Administrativo', area: 'Backoffice', kw: 39, threshold: 40, variance: -2.5, status: 'green', label: 'Verde', action: 'Operação dentro do padrão.', note: 'Consumo sob controle.' },
-          { name: 'Padaria', area: 'Forno e expositores', kw: 47, threshold: 42, variance: 11.9, status: 'yellow', label: 'Amarelo', action: 'Reorganizar aquecimento de estufa e expositores.', note: 'Sobrecarga leve no bloco térmico.' }
-        ]
-      },
-      {
-        timestamp: 'Atualizado há 12 segundos',
-        store: 'Loja matriz | Unidade 01',
-        window: 'Janela de 5 minutos',
-        peak: 468,
-        sectors: [
-          { name: 'Refrigeração', area: 'Câmaras frias', kw: 139, threshold: 150, variance: -7.4, status: 'green', label: 'Verde', action: 'Continuar monitoramento automático.', note: 'Setor dentro do comportamento esperado.' },
-          { name: 'Iluminação', area: 'Salão principal', kw: 73, threshold: 78, variance: -6.4, status: 'green', label: 'Verde', action: 'Operação eficiente mantida.', note: 'Faixa ideal preservada.' },
-          { name: 'Docas', area: 'Carga e descarga', kw: 63, threshold: 60, variance: 5, status: 'yellow', label: 'Amarelo', action: 'Acompanhar próxima leitura para confirmar normalização.', note: 'Desvio em queda.' },
-          { name: 'Climatização', area: 'Área de vendas', kw: 99, threshold: 103, variance: -3.9, status: 'green', label: 'Verde', action: 'Ajuste aplicado com sucesso.', note: 'Retorno à faixa ideal após intervenção.' },
-          { name: 'Administrativo', area: 'Backoffice', kw: 37, threshold: 40, variance: -7.5, status: 'green', label: 'Verde', action: 'Sem ação adicional.', note: 'Consumo estável.' },
-          { name: 'Padaria', area: 'Forno e expositores', kw: 45, threshold: 42, variance: 7.1, status: 'yellow', label: 'Amarelo', action: 'Fechar expositores aquecidos fora de pico.', note: 'Persistência leve de desperdício.' }
-        ]
-      }
-    ];
 
-    let currentFrameIndex = 0;
-    let transparencyIntervalId = null;
-
-    function getTransparencyTone(status) {
-      if (status === 'green') return 'is-good';
-      if (status === 'yellow') return 'is-warning';
-      return 'is-alert';
-    }
-
-    function renderTransparencyFrame(frame) {
-      const greenCount = frame.sectors.filter((sector) => sector.status === 'green').length;
-      const yellowCount = frame.sectors.filter((sector) => sector.status === 'yellow').length;
-      const redCount = frame.sectors.filter((sector) => sector.status === 'red').length;
-      const liveConsumption = frame.sectors.reduce((sum, sector) => sum + sector.kw, 0);
-      const highestKw = Math.max(...frame.sectors.map((sector) => sector.kw));
-      const criticalSectors = frame.sectors
-        .filter((sector) => sector.status !== 'green')
-        .sort((a, b) => b.variance - a.variance);
-
-      transparencyTimestamp.textContent = frame.timestamp;
-      transparencyStore.textContent = frame.store;
-      transparencyWindow.textContent = frame.window;
-      transparencyPeak.textContent = `Pico atual ${frame.peak} kW`;
-      transparencyGreenCount.textContent = String(greenCount);
-      transparencyYellowCount.textContent = String(yellowCount);
-      transparencyRedCount.textContent = String(redCount);
-      transparencyLiveConsumption.textContent = `${liveConsumption} kW`;
-
-      transparencySectorGrid.innerHTML = frame.sectors.map((sector) => `
-        <article class="sector-card sector-card-${sector.status}">
-          <div class="sector-card-head">
-            <div>
-              <span class="sector-title">${sector.name}</span>
-              <span class="sector-area">${sector.area}</span>
-            </div>
-            <span class="sector-state ${getTransparencyTone(sector.status)}">${sector.label}</span>
-          </div>
-          <div class="sector-main-metric">
-            <strong>${sector.kw} kW</strong>
-            <span>Limite ideal ${sector.threshold} kW</span>
-          </div>
-          <div class="sector-delta ${getTransparencyTone(sector.status)}">
-            Desvio ${sector.variance.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%
-          </div>
-          <p class="sector-note">${sector.note}</p>
-          <div class="sector-action">
-            <span class="sector-action-label">Ação recomendada</span>
-            <p>${sector.action}</p>
-          </div>
-        </article>
-      `).join('');
-
-      incidentFeed.innerHTML = criticalSectors.length
-        ? criticalSectors.map((sector) => `
-            <li class="incident-item ${getTransparencyTone(sector.status)}">
-              <strong>${sector.name}</strong>
-              <span>${sector.area}</span>
-              <p>${sector.action}</p>
-            </li>
-          `).join('')
-        : '<li class="incident-item is-good"><strong>Sem incidentes críticos</strong><span>Todos os setores permanecem em verde.</span><p>Continue acompanhando a atualização automática.</p></li>';
-
-      transparencyBars.innerHTML = frame.sectors.map((sector) => `
-        <div class="heat-column heat-column-${sector.status}">
-          <span class="heat-label">${sector.name}</span>
-          <div class="heat-track">
-            <div class="heat-fill" style="height:${Math.max((sector.kw / highestKw) * 100, 18)}%"></div>
-          </div>
-          <strong>${sector.kw} kW</strong>
-        </div>
-      `).join('');
-
-      const overallType = redCount > 0 ? 'error' : (yellowCount > 0 ? 'warning' : 'success');
-      const overallMessage = redCount > 0
-        ? `${redCount} setor(es) em vermelho e ${yellowCount} em amarelo. Priorize correção imediata nas áreas críticas.`
-        : yellowCount > 0
-          ? `${yellowCount} setor(es) em amarelo. Operação monitorada com ajustes recomendados.`
-          : 'Todos os setores estão em verde. O painel indica comportamento energético estável no momento.';
-
-      setStandaloneStatus(transparencyStatus, overallType, overallMessage);
-    }
-
-    function advanceTransparencyFrame() {
-      if (transparencyMode.value === 'review') return;
-      currentFrameIndex = (currentFrameIndex + 1) % transparencyFrames.length;
-      renderTransparencyFrame(transparencyFrames[currentFrameIndex]);
-    }
-
-    refreshTransparency.addEventListener('click', () => {
-      currentFrameIndex = (currentFrameIndex + 1) % transparencyFrames.length;
-      renderTransparencyFrame(transparencyFrames[currentFrameIndex]);
-    });
-
-    transparencyMode.addEventListener('change', () => {
-      if (transparencyMode.value === 'review') {
-        renderTransparencyFrame(transparencyFrames[currentFrameIndex]);
-        setStandaloneStatus(transparencyStatus, 'warning', 'Modo revisão ativado. O painel foi congelado na última leitura exibida.');
-        return;
-      }
-
-      renderTransparencyFrame(transparencyFrames[currentFrameIndex]);
-    });
-
-    renderTransparencyFrame(transparencyFrames[currentFrameIndex]);
-    transparencyIntervalId = window.setInterval(advanceTransparencyFrame, 7000);
-    window.addEventListener('beforeunload', () => {
-      if (transparencyIntervalId) {
-        window.clearInterval(transparencyIntervalId);
-      }
-    });
-  }
-
-  const nightProfileSelect = document.getElementById('nightProfileSelect');
-  if (nightProfileSelect) {
-    const nightFocusSelect = document.getElementById('nightFocusSelect');
-    const nightWasteStatus = document.getElementById('nightWasteStatus');
-    const nightProfileTitle = document.getElementById('nightProfileTitle');
-    const nightProfileStore = document.getElementById('nightProfileStore');
-    const nightBaseBand = document.getElementById('nightBaseBand');
-    const nightAlertWindow = document.getElementById('nightAlertWindow');
-    const wasteOffHours = document.getElementById('wasteOffHours');
-    const wastePeak = document.getElementById('wastePeak');
-    const wasteAlertCount = document.getElementById('wasteAlertCount');
-    const wastePotential = document.getElementById('wastePotential');
-    const nightGrid = document.getElementById('nightGrid');
-    const nightIdealBand = document.getElementById('nightIdealBand');
-    const nightLine = document.getElementById('nightLine');
-    const nightMarkers = document.getElementById('nightMarkers');
-    const nightAxis = document.getElementById('nightAxis');
-    const nightChartNarrative = document.getElementById('nightChartNarrative');
-    const nightAlertList = document.getElementById('nightAlertList');
-    const nightSuspectTableBody = document.getElementById('nightSuspectTableBody');
-    const nightTimeline = document.getElementById('nightTimeline');
-
-    const wasteProfiles = {
-      '2026-03-18': {
-        label: 'Madrugada de 18/03/2026',
-        store: 'Loja matriz | Unidade 01',
-        idealBand: [35, 55],
-        criticalWindow: '02h30-03h30',
-        tariff: 0.94,
-        points: [
-          { hour: '00h', kw: 54, status: 'ok' },
-          { hour: '01h', kw: 58, status: 'watch' },
-          { hour: '02h', kw: 63, status: 'watch' },
-          { hour: '03h', kw: 81, status: 'alert' },
-          { hour: '04h', kw: 77, status: 'alert' },
-          { hour: '05h', kw: 59, status: 'watch' },
-          { hour: '06h', kw: 52, status: 'ok' }
-        ],
-        suspects: [
-          { equipment: 'Expositor refrigerado 04', sector: 'refrigeracao', area: 'Refrigeração', load: 12.4, lastActivity: '23h41', probability: 'Alta', tone: 'is-alert', action: 'Revisar termostato e rotina de desligamento parcial.' },
-          { equipment: 'Ar-condicionado corredor B', sector: 'climatizacao', area: 'Climatização', load: 8.6, lastActivity: '23h58', probability: 'Média', tone: 'is-warning', action: 'Checar automação de setpoint noturno.' },
-          { equipment: 'Estufa auxiliar', sector: 'padaria', area: 'Padaria e apoio', load: 6.8, lastActivity: '22h53', probability: 'Média', tone: 'is-warning', action: 'Confirmar desligamento ao fim da produção.' }
-        ]
-      },
-      '2026-03-19': {
-        label: 'Madrugada de 19/03/2026',
-        store: 'Loja matriz | Unidade 01',
-        idealBand: [35, 55],
-        criticalWindow: '01h45-03h15',
-        tariff: 0.94,
-        points: [
-          { hour: '00h', kw: 51, status: 'ok' },
-          { hour: '01h', kw: 57, status: 'watch' },
-          { hour: '02h', kw: 69, status: 'alert' },
-          { hour: '03h', kw: 74, status: 'alert' },
-          { hour: '04h', kw: 71, status: 'alert' },
-          { hour: '05h', kw: 60, status: 'watch' },
-          { hour: '06h', kw: 49, status: 'ok' }
-        ],
-        suspects: [
-          { equipment: 'Compressor doca 02', sector: 'refrigeracao', area: 'Refrigeração', load: 13.1, lastActivity: '00h12', probability: 'Alta', tone: 'is-alert', action: 'Inspecionar partida indevida e ciclo fora do padrão.' },
-          { equipment: 'Ar-condicionado área de vendas', sector: 'climatizacao', area: 'Climatização', load: 10.2, lastActivity: '23h49', probability: 'Alta', tone: 'is-alert', action: 'Aplicar setpoint de madrugada e revisar portas abertas.' },
-          { equipment: 'Ilha aquecida de apoio', sector: 'padaria', area: 'Padaria e apoio', load: 5.4, lastActivity: '22h34', probability: 'Média', tone: 'is-warning', action: 'Retirar da tomada após fechamento.' }
-        ]
-      },
-      '2026-03-20': {
-        label: 'Madrugada de 20/03/2026',
-        store: 'Loja matriz | Unidade 01',
-        idealBand: [35, 55],
-        criticalWindow: '02h00-04h00',
-        tariff: 0.94,
-        points: [
-          { hour: '00h', kw: 48, status: 'ok' },
-          { hour: '01h', kw: 53, status: 'ok' },
-          { hour: '02h', kw: 66, status: 'watch' },
-          { hour: '03h', kw: 84, status: 'alert' },
-          { hour: '04h', kw: 79, status: 'alert' },
-          { hour: '05h', kw: 62, status: 'watch' },
-          { hour: '06h', kw: 50, status: 'ok' }
-        ],
-        suspects: [
-          { equipment: 'Câmara fria auxiliar', sector: 'refrigeracao', area: 'Refrigeração', load: 14.8, lastActivity: '23h55', probability: 'Alta', tone: 'is-alert', action: 'Verificar porta mal fechada e degelo fora da rotina.' },
-          { equipment: 'Split salão oeste', sector: 'climatizacao', area: 'Climatização', load: 11.6, lastActivity: '00h07', probability: 'Alta', tone: 'is-alert', action: 'Desligar manualmente e corrigir automação horária.' },
-          { equipment: 'Forno de apoio', sector: 'padaria', area: 'Padaria e apoio', load: 7.2, lastActivity: '22h48', probability: 'Média', tone: 'is-warning', action: 'Reforçar checklist de fechamento do turno.' }
-        ]
-      }
-    };
-
-    function formatCurrency(value) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-    }
-
-    function getFilteredSuspects(profile, focus) {
-      if (focus === 'all') return profile.suspects;
-      return profile.suspects.filter((item) => item.sector === focus);
-    }
-
-    function buildNightChart(profile) {
-      const width = 760;
-      const height = 320;
-      const padding = { top: 24, right: 24, bottom: 42, left: 44 };
-      const values = profile.points.map((point) => point.kw);
-      const maxValue = Math.max(...values, profile.idealBand[1] + 10);
-      const minValue = Math.min(profile.idealBand[0] - 8, ...values);
-      const usableWidth = width - padding.left - padding.right;
-      const usableHeight = height - padding.top - padding.bottom;
-
-      function x(index) {
-        return padding.left + (usableWidth / (profile.points.length - 1)) * index;
-      }
-
-      function y(value) {
-        return padding.top + usableHeight - ((value - minValue) / (maxValue - minValue)) * usableHeight;
-      }
-
-      const polylinePoints = profile.points.map((point, index) => `${x(index)},${y(point.kw)}`).join(' ');
-      const gridLines = [0, 0.25, 0.5, 0.75, 1].map((step) => {
-        const yy = padding.top + usableHeight * step;
-        return `<line x1="${padding.left}" y1="${yy}" x2="${width - padding.right}" y2="${yy}" class="chart-grid-line"></line>`;
-      }).join('');
-      const bandY = y(profile.idealBand[1]);
-      const bandHeight = y(profile.idealBand[0]) - bandY;
-      const axisLabels = profile.points.map((point, index) => `
-        <text x="${x(index)}" y="${height - 12}" class="chart-axis-label" text-anchor="middle">${point.hour}</text>
-      `).join('');
-      const markers = profile.points.map((point, index) => `
-        <circle cx="${x(index)}" cy="${y(point.kw)}" r="${point.status === 'alert' ? 7 : 5}" class="chart-marker chart-marker-${point.status}"></circle>
-      `).join('');
-
-      nightGrid.innerHTML = gridLines;
-      nightIdealBand.innerHTML = `<rect x="${padding.left}" y="${bandY}" width="${usableWidth}" height="${bandHeight}" class="chart-ideal-band"></rect>`;
-      nightLine.setAttribute('points', polylinePoints);
-      nightMarkers.innerHTML = markers;
-      nightAxis.innerHTML = axisLabels;
-    }
-
-    function renderWasteProfile() {
-      const profile = wasteProfiles[nightProfileSelect.value];
-      const focus = nightFocusSelect.value;
-      const filteredSuspects = getFilteredSuspects(profile, focus);
-      const idealMax = profile.idealBand[1];
-      const alerts = profile.points.filter((point) => point.kw > idealMax);
-      const offHoursKwh = profile.points.reduce((sum, point) => sum + Math.max(point.kw - idealMax, 0), 0);
-      const peakPoint = profile.points.reduce((peak, point) => point.kw > peak.kw ? point : peak);
-      const potentialSavings = offHoursKwh * profile.tariff;
-      const narrativeEquipment = filteredSuspects.length ? filteredSuspects[0].equipment : 'nenhum equipamento neste filtro';
-      const timelineItems = profile.points.map((point) => {
-        const tone = point.status === 'alert' ? 'is-alert' : point.status === 'watch' ? 'is-warning' : 'is-good';
-        const label = point.status === 'alert' ? 'Pico fora do horário' : point.status === 'watch' ? 'Acima da faixa ideal' : 'Faixa controlada';
-        return `
-          <div class="time-pulse-item ${tone}">
-            <strong>${point.hour}</strong>
-            <span>${point.kw} kW</span>
-            <p>${label}</p>
-          </div>
-        `;
-      }).join('');
-
-      nightProfileTitle.textContent = profile.label;
-      nightProfileStore.textContent = profile.store;
-      nightBaseBand.textContent = `Faixa ideal ${profile.idealBand[0]}-${profile.idealBand[1]} kW`;
-      nightAlertWindow.textContent = `Janela crítica ${profile.criticalWindow}`;
-      wasteOffHours.textContent = `${offHoursKwh.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kWh`;
-      wastePeak.textContent = `${peakPoint.kw} kW`;
-      wasteAlertCount.textContent = String(alerts.length);
-      wastePotential.textContent = formatCurrency(potentialSavings);
-
-      nightChartNarrative.textContent = `${alerts.length} ponto(s) acima da faixa ideal. O principal suspeito no filtro atual é ${narrativeEquipment}.`;
-
-      nightAlertList.innerHTML = alerts.length
-        ? alerts.map((point) => `
-            <li class="waste-alert-item ${point.status === 'alert' ? 'is-alert' : 'is-warning'}">
-              <strong>${point.hour}</strong>
-              <span>${point.kw} kW registrados na madrugada</span>
-              <p>Ultrapassou o limite ideal de ${idealMax} kW e pede verificação operacional.</p>
-            </li>
-          `).join('')
-        : '<li class="waste-alert-item is-good"><strong>Noite controlada</strong><span>Sem leituras acima da faixa ideal.</span><p>O comportamento da madrugada permaneceu dentro do esperado.</p></li>';
-
-      nightSuspectTableBody.innerHTML = filteredSuspects.length
-        ? filteredSuspects.map((suspect) => `
-            <tr>
-              <td>${suspect.equipment}</td>
-              <td>${suspect.area}</td>
-              <td>${suspect.load.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kW</td>
-              <td>${suspect.lastActivity}</td>
-              <td><span class="table-status ${suspect.tone}">${suspect.probability}</span></td>
-              <td>${suspect.action}</td>
-            </tr>
-          `).join('')
-        : '<tr><td colspan="6">Nenhum equipamento corresponde ao filtro atual.</td></tr>';
-
-      nightTimeline.innerHTML = timelineItems;
-      buildNightChart(profile);
-
-      if (alerts.length >= 2) {
-        setStandaloneStatus(nightWasteStatus, 'error', `Foram detectados ${alerts.length} picos fora do horário. Investigue climatização e refrigeração ainda nesta manhã.`);
-      } else if (alerts.length === 1) {
-        setStandaloneStatus(nightWasteStatus, 'warning', 'Foi detectado 1 pico fora do horário. Revise o equipamento mais provável e reforce o checklist de fechamento.');
-      } else {
-        setStandaloneStatus(nightWasteStatus, 'success', 'A madrugada permaneceu dentro da faixa ideal. Nenhum desperdício relevante foi identificado.');
-      }
-    }
-
-    nightProfileSelect.addEventListener('change', renderWasteProfile);
-    nightFocusSelect.addEventListener('change', renderWasteProfile);
-    renderWasteProfile();
-  }
-
-  const campaignSelect = document.getElementById('campaignSelect');
-  if (campaignSelect) {
-    const campaignSectorFilter = document.getElementById('campaignSectorFilter');
-    const campaignStatus = document.getElementById('campaignStatus');
-    const campaignTitle = document.getElementById('campaignTitle');
-    const campaignDate = document.getElementById('campaignDate');
-    const campaignTarget = document.getElementById('campaignTarget');
-    const campaignReach = document.getElementById('campaignReach');
-    const campaignBefore = document.getElementById('campaignBefore');
-    const campaignAfter = document.getElementById('campaignAfter');
-    const campaignDelta = document.getElementById('campaignDelta');
-    const campaignEngagement = document.getElementById('campaignEngagement');
-    const campaignCompareBars = document.getElementById('campaignCompareBars');
-    const campaignMilestones = document.getElementById('campaignMilestones');
-    const campaignSectorTableBody = document.getElementById('campaignSectorTableBody');
-    const campaignInsights = document.getElementById('campaignInsights');
-
-    const campaignData = {
-      'cold-door': {
-        title: 'Feche a porta fria',
-        date: 'Aplicada em 12/03/2026',
-        target: 'Foco: refrigeração',
-        reach: 'Alcance: 126 colaboradores',
-        before: 48200,
-        after: 44150,
-        engagement: 84,
-        milestones: [
-          { date: '10/03', text: 'Briefing com líderes de loja e manutenção.' },
-          { date: '12/03', text: 'Campanha lançada com cartazes e reforço no turno.' },
-          { date: '19/03', text: 'Primeira leitura mostrou queda nas aberturas fora de rotina.' }
-        ],
-        sectors: [
-          { name: 'Refrigeração', key: 'refrigeracao', before: 22400, after: 19180, delta: -14.4, reading: 'Queda forte nas portas frias.', next: 'Padronizar checklist no fechamento.', tone: 'is-good' },
-          { name: 'Climatização', key: 'climatizacao', before: 11820, after: 11510, delta: -2.6, reading: 'Impacto indireto moderado.', next: 'Manter monitoramento cruzado.', tone: 'is-warning' },
-          { name: 'Operação de loja', key: 'operacao', before: 13980, after: 13460, delta: -3.7, reading: 'Equipe aderiu parcialmente.', next: 'Reforçar turnos de reposição.', tone: 'is-warning' }
-        ],
-        insights: [
-          'A maior resposta veio da refrigeração, onde a campanha atacou o hábito mais frequente de desperdício.',
-          'Climatização e operação de loja melhoraram menos, então o tema ainda precisa de reforço visual e supervisão.',
-          'A campanha já tem resultado suficiente para virar rotina permanente de fechamento.'
-        ]
-      },
-      'night-shutdown': {
-        title: 'Desligue ao sair',
-        date: 'Aplicada em 03/03/2026',
-        target: 'Foco: operação de loja',
-        reach: 'Alcance: 98 colaboradores',
-        before: 31700,
-        after: 27840,
-        engagement: 79,
-        milestones: [
-          { date: '01/03', text: 'Mapeamento de equipamentos esquecidos ao fim do turno.' },
-          { date: '03/03', text: 'Campanha iniciada com checklist físico por setor.' },
-          { date: '11/03', text: 'Queda nas cargas noturnas em padaria e apoio.' }
-        ],
-        sectors: [
-          { name: 'Refrigeração', key: 'refrigeracao', before: 11800, after: 11340, delta: -3.9, reading: 'Setor menos sensível à campanha.', next: 'Manter foco em automação.', tone: 'is-warning' },
-          { name: 'Climatização', key: 'climatizacao', before: 9200, after: 7850, delta: -14.7, reading: 'Bom efeito no desligamento do salão.', next: 'Replicar no turno da noite.', tone: 'is-good' },
-          { name: 'Operação de loja', key: 'operacao', before: 10700, after: 8650, delta: -19.2, reading: 'Melhor ganho comportamental do ciclo.', next: 'Transformar checklist em padrão diário.', tone: 'is-good' }
-        ],
-        insights: [
-          'A campanha teve impacto alto em equipamentos de apoio e no desligamento do ar-condicionado.',
-          'Refrigeração quase não mudou, mostrando que o ganho ali depende mais de processo técnico do que de comportamento.',
-          'O checklist de saída foi o principal vetor de adesão desta campanha.'
-        ]
-      },
-      'ac-setpoint': {
-        title: 'Temperatura consciente',
-        date: 'Aplicada em 21/02/2026',
-        target: 'Foco: climatização',
-        reach: 'Alcance: 114 colaboradores',
-        before: 27400,
-        after: 24960,
-        engagement: 88,
-        milestones: [
-          { date: '19/02', text: 'Treinamento rápido sobre setpoint ideal e portas abertas.' },
-          { date: '21/02', text: 'Campanha ativada com QR code e reforço em murais.' },
-          { date: '28/02', text: 'Setor de vendas apresentou queda consistente no consumo.' }
-        ],
-        sectors: [
-          { name: 'Refrigeração', key: 'refrigeracao', before: 7900, after: 7720, delta: -2.3, reading: 'Pouca influência direta.', next: 'Seguir com campanha específica da cadeia fria.', tone: 'is-warning' },
-          { name: 'Climatização', key: 'climatizacao', before: 12600, after: 10320, delta: -18.1, reading: 'Setor respondeu muito bem ao ajuste de setpoint.', next: 'Consolidar regra na automação.', tone: 'is-good' },
-          { name: 'Operação de loja', key: 'operacao', before: 6900, after: 6920, delta: 0.3, reading: 'Sem efeito relevante fora do setor-alvo.', next: 'Não priorizar esta frente para operação.', tone: 'is-alert' }
-        ],
-        insights: [
-          'A campanha gerou efeito claro na climatização, com ganho sustentado no salão de vendas.',
-          'Os demais setores quase não se moveram, o que confirma o foco correto da iniciativa.',
-          'Vale incorporar a campanha ao onboarding de líderes de piso.'
-        ]
-      }
-    };
-
-    function renderCampaign() {
-      const campaign = campaignData[campaignSelect.value];
-      const filter = campaignSectorFilter.value;
-      const sectors = filter === 'all' ? campaign.sectors : campaign.sectors.filter((sector) => sector.key === filter);
-      const overallDelta = ((campaign.after - campaign.before) / campaign.before) * 100;
-      const highestValue = Math.max(...campaign.sectors.flatMap((sector) => [sector.before, sector.after]));
-
-      campaignTitle.textContent = campaign.title;
-      campaignDate.textContent = campaign.date;
-      campaignTarget.textContent = campaign.target;
-      campaignReach.textContent = campaign.reach;
-      campaignBefore.textContent = `${new Intl.NumberFormat('pt-BR').format(campaign.before)} kWh`;
-      campaignAfter.textContent = `${new Intl.NumberFormat('pt-BR').format(campaign.after)} kWh`;
-      campaignDelta.textContent = `${overallDelta.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
-      campaignEngagement.textContent = `${campaign.engagement}%`;
-
-      campaignCompareBars.innerHTML = sectors.map((sector) => `
-        <article class="compare-bar-card">
-          <div class="compare-bar-head">
-            <strong>${sector.name}</strong>
-            <span class="${sector.tone}">${sector.delta.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
-          </div>
-          <div class="compare-bar-stack">
-            <div class="compare-bar-row">
-              <span>Antes</span>
-              <div class="compare-bar-track"><div class="compare-bar-fill before-fill" style="width:${(sector.before / highestValue) * 100}%"></div></div>
-              <strong>${new Intl.NumberFormat('pt-BR').format(sector.before)} kWh</strong>
-            </div>
-            <div class="compare-bar-row">
-              <span>Depois</span>
-              <div class="compare-bar-track"><div class="compare-bar-fill after-fill" style="width:${(sector.after / highestValue) * 100}%"></div></div>
-              <strong>${new Intl.NumberFormat('pt-BR').format(sector.after)} kWh</strong>
-            </div>
-          </div>
-        </article>
-      `).join('');
-
-      campaignMilestones.innerHTML = campaign.milestones.map((item) => `
-        <div class="milestone-item">
-          <strong>${item.date}</strong>
-          <p>${item.text}</p>
-        </div>
-      `).join('');
-
-      campaignSectorTableBody.innerHTML = sectors.length
-        ? sectors.map((sector) => `
-            <tr>
-              <td>${sector.name}</td>
-              <td>${new Intl.NumberFormat('pt-BR').format(sector.before)} kWh</td>
-              <td>${new Intl.NumberFormat('pt-BR').format(sector.after)} kWh</td>
-              <td class="${sector.tone}">${sector.delta.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</td>
-              <td><span class="table-status ${sector.tone}">${sector.reading}</span></td>
-              <td>${sector.next}</td>
-            </tr>
-          `).join('')
-        : '<tr><td colspan="6">Nenhum setor corresponde ao filtro selecionado.</td></tr>';
-
-      campaignInsights.innerHTML = campaign.insights.map((item) => `<li>${item}</li>`).join('');
-
-      if (overallDelta < -10) {
-        setStandaloneStatus(campaignStatus, 'success', `A campanha "${campaign.title}" reduziu o consumo em ${Math.abs(overallDelta).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% no recorte consolidado.`);
-      } else if (overallDelta < 0) {
-        setStandaloneStatus(campaignStatus, 'warning', `A campanha "${campaign.title}" gerou melhora, mas o ganho ainda é moderado. Vale reforçar comunicação e rotina.`);
-      } else {
-        setStandaloneStatus(campaignStatus, 'error', `A campanha "${campaign.title}" ainda não mostrou ganho consolidado. Revise mensagem, timing e aderência operacional.`);
-      }
-    }
-
-    campaignSelect.addEventListener('change', renderCampaign);
-    campaignSectorFilter.addEventListener('change', renderCampaign);
-    renderCampaign();
-  }
 
   const rankingPeriodSelect = document.getElementById('rankingPeriodSelect');
   if (rankingPeriodSelect) {
@@ -1492,6 +1056,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const forecastMonthSelect = document.getElementById('forecastMonthSelect');
   if (forecastMonthSelect) {
+    const forecastViewSelect = document.getElementById('forecastViewSelect');
     const forecastTariffSelect = document.getElementById('forecastTariffSelect');
     const forecastStatus = document.getElementById('forecastStatus');
     const forecastCycleTitle = document.getElementById('forecastCycleTitle');
@@ -1508,26 +1073,51 @@ document.addEventListener('DOMContentLoaded', () => {
     const tariffStack = document.getElementById('tariffStack');
     const forecastComponentTableBody = document.getElementById('forecastComponentTableBody');
     const forecastInsights = document.getElementById('forecastInsights');
+    const forecastDailyCost = document.getElementById('forecastDailyCost');
+    const forecastDailyKwh = document.getElementById('forecastDailyKwh');
+    const forecastAvgTariff = document.getElementById('forecastAvgTariff');
+    const forecastTariffFlag = document.getElementById('forecastTariffFlag');
+    const forecastProgressBars = document.getElementById('forecastProgressBars');
+    const forecastProgressTitle = document.getElementById('forecastProgressTitle');
+    const forecastScenario = document.getElementById('forecastScenario');
 
     const forecastData = {
       '2026-01': {
         monthLabel: 'Janeiro de 2026',
-        updatedAt: 'Atualizado às 16h10',
+        daysInMonth: 31,
+        daysPassed: 31,
+        updatedAt: 'Atualizado \u00e0s 16h10',
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 39800, cost: 28150 },
+          { period: 'Sem 2 (08-14)', kwh: 43200, cost: 30560 },
+          { period: 'Sem 3 (15-21)', kwh: 46100, cost: 32610 },
+          { period: 'Sem 4 (22-31)', kwh: 47300, cost: 33500 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 6120, cost: 4330 },
+          { period: 'Ter', kwh: 6340, cost: 4486 },
+          { period: 'Qua', kwh: 6480, cost: 4585 },
+          { period: 'Qui', kwh: 6290, cost: 4450 },
+          { period: 'Sex', kwh: 6610, cost: 4676 },
+          { period: 'S\u00e1b', kwh: 4250, cost: 3007 },
+          { period: 'Dom', kwh: 3510, cost: 2484 }
+        ],
         tariffs: {
           green: {
             label: 'Horo-sazonal verde',
             budget: 128000,
             accumulatedKwh: 176400,
             projectedBill: 124820,
+            avgTariff: 0.708,
             components: [
               { name: 'Ponta contratada', kwh: 23800, tariff: 1.12, cost: 26656, share: 21.4, reading: 'Faixa cara sob controle.', tone: 'is-good' },
               { name: 'Fora de ponta', kwh: 141200, tariff: 0.58, cost: 81896, share: 65.6, reading: 'Maior peso financeiro do ciclo.', tone: 'is-warning' },
-              { name: 'Encargos e bandeira', kwh: 11400, tariff: 1.43, cost: 16268, share: 13.0, reading: 'Bandeira moderada no mês.', tone: 'is-warning' }
+              { name: 'Encargos e bandeira', kwh: 11400, tariff: 1.43, cost: 16268, share: 13.0, reading: 'Bandeira moderada no m\u00eas.', tone: 'is-warning' }
             ],
             insights: [
-              'A conta tende a fechar abaixo do orçamento, mas a faixa fora de ponta continua concentrando a maior parte do gasto.',
-              'Ainda existe espaço para reduzir encargos se a demanda de ponta continuar estável.',
-              'O comportamento atual dá margem para proteger o orçamento sem ação emergencial.'
+              'A conta tende a fechar abaixo do or\u00e7amento, mas a faixa fora de ponta continua concentrando a maior parte do gasto.',
+              'Ainda existe espa\u00e7o para reduzir encargos se a demanda de ponta continuar est\u00e1vel.',
+              'O comportamento atual d\u00e1 margem para proteger o or\u00e7amento sem a\u00e7\u00e3o emergencial.'
             ]
           },
           blue: {
@@ -1535,14 +1125,15 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 128000,
             accumulatedKwh: 176400,
             projectedBill: 131940,
+            avgTariff: 0.748,
             components: [
-              { name: 'Demanda ponta', kwh: 22100, tariff: 1.36, cost: 30056, share: 22.8, reading: 'Mais sensível no modelo azul.', tone: 'is-warning' },
+              { name: 'Demanda ponta', kwh: 22100, tariff: 1.36, cost: 30056, share: 22.8, reading: 'Mais sens\u00edvel no modelo azul.', tone: 'is-warning' },
               { name: 'Demanda fora de ponta', kwh: 139900, tariff: 0.61, cost: 85339, share: 64.7, reading: 'Componente dominante da fatura.', tone: 'is-warning' },
               { name: 'Encargos e bandeira', kwh: 14400, tariff: 1.15, cost: 16545, share: 12.5, reading: 'Encargo levemente pressionado.', tone: 'is-warning' }
             ],
             insights: [
-              'No modelo azul, a ponta pesa mais e aproxima a conta do teto orçamentário.',
-              'Vale monitorar picos de demanda antes de consolidar esse perfil tarifário.',
+              'No modelo azul, a ponta pesa mais e aproxima a conta do teto or\u00e7ament\u00e1rio.',
+              'Vale monitorar picos de demanda antes de consolidar esse perfil tarif\u00e1rio.',
               'A margem financeira fica mais curta do que no modelo verde.'
             ]
           },
@@ -1551,14 +1142,15 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 128000,
             accumulatedKwh: 176400,
             projectedBill: 129380,
+            avgTariff: 0.733,
             components: [
-              { name: 'Energia ativa', kwh: 165200, tariff: 0.67, cost: 110684, share: 85.6, reading: 'Modelo simplificado com custo estável.', tone: 'is-warning' },
-              { name: 'Encargos', kwh: 8400, tariff: 1.31, cost: 11004, share: 8.5, reading: 'Encargo linear no período.', tone: 'is-good' },
+              { name: 'Energia ativa', kwh: 165200, tariff: 0.67, cost: 110684, share: 85.6, reading: 'Modelo simplificado com custo est\u00e1vel.', tone: 'is-warning' },
+              { name: 'Encargos', kwh: 8400, tariff: 1.31, cost: 11004, share: 8.5, reading: 'Encargo linear no per\u00edodo.', tone: 'is-good' },
               { name: 'Tributos e adicionais', kwh: 2800, tariff: 2.74, cost: 7692, share: 5.9, reading: 'Peso residual do fechamento.', tone: 'is-good' }
             ],
             insights: [
-              'A tarifa convencional simplifica a leitura, mas não maximiza economia nos horários mais eficientes.',
-              'Mesmo com previsibilidade, a conta ainda ficaria levemente acima do orçamento.',
+              'A tarifa convencional simplifica a leitura, mas n\u00e3o maximiza economia nos hor\u00e1rios mais eficientes.',
+              'Mesmo com previsibilidade, a conta ainda ficaria levemente acima do or\u00e7amento.',
               'O modelo verde continua mais vantajoso neste ciclo.'
             ]
           }
@@ -1566,21 +1158,39 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       '2026-02': {
         monthLabel: 'Fevereiro de 2026',
-        updatedAt: 'Atualizado às 15h45',
+        daysInMonth: 28,
+        daysPassed: 28,
+        updatedAt: 'Atualizado \u00e0s 15h45',
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 38200, cost: 26840 },
+          { period: 'Sem 2 (08-14)', kwh: 41600, cost: 29230 },
+          { period: 'Sem 3 (15-21)', kwh: 43800, cost: 30780 },
+          { period: 'Sem 4 (22-28)', kwh: 44700, cost: 31770 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 5780, cost: 4062 },
+          { period: 'Ter', kwh: 5990, cost: 4208 },
+          { period: 'Qua', kwh: 6120, cost: 4300 },
+          { period: 'Qui', kwh: 5880, cost: 4130 },
+          { period: 'Sex', kwh: 6280, cost: 4412 },
+          { period: 'S\u00e1b', kwh: 4030, cost: 2831 },
+          { period: 'Dom', kwh: 3220, cost: 2263 }
+        ],
         tariffs: {
           green: {
             label: 'Horo-sazonal verde',
             budget: 126000,
             accumulatedKwh: 168300,
             projectedBill: 119620,
+            avgTariff: 0.711,
             components: [
-              { name: 'Ponta contratada', kwh: 21400, tariff: 1.09, cost: 23326, share: 19.5, reading: 'Ponta melhor distribuída.', tone: 'is-good' },
-              { name: 'Fora de ponta', kwh: 135700, tariff: 0.56, cost: 75992, share: 63.5, reading: 'Peso principal do mês.', tone: 'is-warning' },
+              { name: 'Ponta contratada', kwh: 21400, tariff: 1.09, cost: 23326, share: 19.5, reading: 'Ponta melhor distribu\u00edda.', tone: 'is-good' },
+              { name: 'Fora de ponta', kwh: 135700, tariff: 0.56, cost: 75992, share: 63.5, reading: 'Peso principal do m\u00eas.', tone: 'is-warning' },
               { name: 'Encargos e bandeira', kwh: 14100, tariff: 1.44, cost: 20302, share: 17.0, reading: 'Encargos pressionam parte do ganho.', tone: 'is-warning' }
             ],
             insights: [
-              'Fevereiro projeta folga confortável frente ao orçamento.',
-              'A redução no horário de ponta ajudou a preservar margem financeira.',
+              'Fevereiro projeta folga confort\u00e1vel frente ao or\u00e7amento.',
+              'A redu\u00e7\u00e3o no hor\u00e1rio de ponta ajudou a preservar margem financeira.',
               'Encargos seguem como principal risco para o fechamento.'
             ]
           },
@@ -1589,15 +1199,16 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 126000,
             accumulatedKwh: 168300,
             projectedBill: 127880,
+            avgTariff: 0.760,
             components: [
               { name: 'Demanda ponta', kwh: 20800, tariff: 1.32, cost: 27456, share: 21.5, reading: 'Faixa pressionada na modalidade azul.', tone: 'is-warning' },
-              { name: 'Demanda fora de ponta', kwh: 132500, tariff: 0.60, cost: 79500, share: 62.2, reading: 'Componente majoritário.', tone: 'is-warning' },
+              { name: 'Demanda fora de ponta', kwh: 132500, tariff: 0.60, cost: 79500, share: 62.2, reading: 'Componente majorit\u00e1rio.', tone: 'is-warning' },
               { name: 'Encargos e bandeira', kwh: 13600, tariff: 1.54, cost: 20944, share: 16.3, reading: 'Encargos ainda relevantes.', tone: 'is-warning' }
             ],
             insights: [
-              'No azul, fevereiro quase encosta no orçamento e reduz a margem de manobra.',
+              'No azul, fevereiro quase encosta no or\u00e7amento e reduz a margem de manobra.',
               'A modalidade verde ainda se mostra financeiramente superior para este perfil.',
-              'Se houver novos picos, a conta pode ultrapassar o limite orçado.'
+              'Se houver novos picos, a conta pode ultrapassar o limite or\u00e7ado.'
             ]
           },
           flat: {
@@ -1605,37 +1216,56 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 126000,
             accumulatedKwh: 168300,
             projectedBill: 123410,
+            avgTariff: 0.733,
             components: [
-              { name: 'Energia ativa', kwh: 157800, tariff: 0.66, cost: 104148, share: 84.4, reading: 'Leitura simples e estável.', tone: 'is-warning' },
+              { name: 'Energia ativa', kwh: 157800, tariff: 0.66, cost: 104148, share: 84.4, reading: 'Leitura simples e est\u00e1vel.', tone: 'is-warning' },
               { name: 'Encargos', kwh: 7300, tariff: 1.34, cost: 9782, share: 7.9, reading: 'Encargo controlado.', tone: 'is-good' },
-              { name: 'Tributos e adicionais', kwh: 3200, tariff: 2.96, cost: 9472, share: 7.7, reading: 'Peso secundário no fechamento.', tone: 'is-good' }
+              { name: 'Tributos e adicionais', kwh: 3200, tariff: 2.96, cost: 9472, share: 7.7, reading: 'Peso secund\u00e1rio no fechamento.', tone: 'is-good' }
             ],
             insights: [
-              'A modalidade convencional mantém a fatura abaixo do orçamento, mas sem capturar todo o benefício da curva horária.',
-              'O risco financeiro é baixo, porém a oportunidade de economia é menor.',
-              'Vale comparar o convencional apenas como referência de estabilidade.'
+              'A modalidade convencional mant\u00e9m a fatura abaixo do or\u00e7amento, mas sem capturar todo o benef\u00edcio da curva hor\u00e1ria.',
+              'O risco financeiro \u00e9 baixo, por\u00e9m a oportunidade de economia \u00e9 menor.',
+              'Vale comparar o convencional apenas como refer\u00eancia de estabilidade.'
             ]
           }
         }
       },
       '2026-03': {
-        monthLabel: 'Março de 2026',
-        updatedAt: 'Atualizado às 14h20',
+        monthLabel: 'Mar\u00e7o de 2026',
+        daysInMonth: 31,
+        daysPassed: 31,
+        updatedAt: 'Atualizado \u00e0s 14h20',
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 42100, cost: 30720 },
+          { period: 'Sem 2 (08-14)', kwh: 45600, cost: 33290 },
+          { period: 'Sem 3 (15-21)', kwh: 47800, cost: 34890 },
+          { period: 'Sem 4 (22-31)', kwh: 47200, cost: 37580 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 6380, cost: 4656 },
+          { period: 'Ter', kwh: 6620, cost: 4832 },
+          { period: 'Qua', kwh: 6790, cost: 4956 },
+          { period: 'Qui', kwh: 6510, cost: 4752 },
+          { period: 'Sex', kwh: 6880, cost: 5022 },
+          { period: 'S\u00e1b', kwh: 4410, cost: 3219 },
+          { period: 'Dom', kwh: 3610, cost: 2635 }
+        ],
         tariffs: {
           green: {
             label: 'Horo-sazonal verde',
             budget: 132000,
             accumulatedKwh: 182700,
             projectedBill: 136480,
+            avgTariff: 0.747,
             components: [
-              { name: 'Ponta contratada', kwh: 24600, tariff: 1.15, cost: 28290, share: 20.7, reading: 'Ponta controlada, mas já acima da média.', tone: 'is-warning' },
-              { name: 'Fora de ponta', kwh: 146900, tariff: 0.61, cost: 89609, share: 65.7, reading: 'Principal alavanca da previsão de alta.', tone: 'is-alert' },
-              { name: 'Encargos e bandeira', kwh: 11200, tariff: 1.66, cost: 18581, share: 13.6, reading: 'Encargos seguram parte do orçamento.', tone: 'is-warning' }
+              { name: 'Ponta contratada', kwh: 24600, tariff: 1.15, cost: 28290, share: 20.7, reading: 'Ponta controlada, mas j\u00e1 acima da m\u00e9dia.', tone: 'is-warning' },
+              { name: 'Fora de ponta', kwh: 146900, tariff: 0.61, cost: 89609, share: 65.7, reading: 'Principal alavanca da previs\u00e3o de alta.', tone: 'is-alert' },
+              { name: 'Encargos e bandeira', kwh: 11200, tariff: 1.66, cost: 18581, share: 13.6, reading: 'Encargos seguram parte do or\u00e7amento.', tone: 'is-warning' }
             ],
             insights: [
-              'A previsão já excede o orçamento em março e pede correção ainda nesta semana.',
+              'A previs\u00e3o j\u00e1 excede o or\u00e7amento em mar\u00e7o e pede corre\u00e7\u00e3o ainda nesta semana.',
               'O custo fora de ponta continua sendo o principal motor da conta.',
-              'A redução de cargas não críticas no restante do mês pode devolver parte da margem financeira.'
+              'A redu\u00e7\u00e3o de cargas n\u00e3o cr\u00edticas no restante do m\u00eas pode devolver parte da margem financeira.'
             ]
           },
           blue: {
@@ -1643,15 +1273,16 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 132000,
             accumulatedKwh: 182700,
             projectedBill: 142930,
+            avgTariff: 0.782,
             components: [
-              { name: 'Demanda ponta', kwh: 23800, tariff: 1.39, cost: 33082, share: 23.1, reading: 'Ponta pressionada no cenário azul.', tone: 'is-alert' },
+              { name: 'Demanda ponta', kwh: 23800, tariff: 1.39, cost: 33082, share: 23.1, reading: 'Ponta pressionada no cen\u00e1rio azul.', tone: 'is-alert' },
               { name: 'Demanda fora de ponta', kwh: 144400, tariff: 0.63, cost: 90972, share: 63.6, reading: 'Componente dominante.', tone: 'is-alert' },
               { name: 'Encargos e bandeira', kwh: 13100, tariff: 1.44, cost: 18876, share: 13.3, reading: 'Encargos seguem elevados.', tone: 'is-warning' }
             ],
             insights: [
-              'A modalidade azul agrava o desvio financeiro do mês.',
-              'O peso da ponta faz a conta estourar o orçamento com pouca folga para correção.',
-              'Não parece a melhor configuração para o perfil de consumo atual.'
+              'A modalidade azul agrava o desvio financeiro do m\u00eas.',
+              'O peso da ponta faz a conta estourar o or\u00e7amento com pouca folga para corre\u00e7\u00e3o.',
+              'N\u00e3o parece a melhor configura\u00e7\u00e3o para o perfil de consumo atual.'
             ]
           },
           flat: {
@@ -1659,15 +1290,165 @@ document.addEventListener('DOMContentLoaded', () => {
             budget: 132000,
             accumulatedKwh: 182700,
             projectedBill: 138540,
+            avgTariff: 0.758,
             components: [
               { name: 'Energia ativa', kwh: 171500, tariff: 0.69, cost: 118335, share: 85.4, reading: 'Energia ativa domina o fechamento.', tone: 'is-alert' },
               { name: 'Encargos', kwh: 6900, tariff: 1.41, cost: 9729, share: 7.0, reading: 'Encargos em linha.', tone: 'is-good' },
               { name: 'Tributos e adicionais', kwh: 4300, tariff: 2.44, cost: 10476, share: 7.6, reading: 'Adicionais moderados.', tone: 'is-good' }
             ],
             insights: [
-              'A tarifa convencional também ultrapassa o orçamento em março.',
-              'Apesar da simplicidade, ela não resolve a pressão financeira do ciclo.',
+              'A tarifa convencional tamb\u00e9m ultrapassa o or\u00e7amento em mar\u00e7o.',
+              'Apesar da simplicidade, ela n\u00e3o resolve a press\u00e3o financeira do ciclo.',
               'O corte de consumo continua sendo a principal alavanca.'
+            ]
+          }
+        }
+      },
+      '2026-04': {
+        monthLabel: 'Abril de 2026',
+        daysInMonth: 30,
+        daysPassed: 30,
+        updatedAt: 'Atualizado \u00e0s 11h35',
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 40500, cost: 29560 },
+          { period: 'Sem 2 (08-14)', kwh: 43800, cost: 31980 },
+          { period: 'Sem 3 (15-21)', kwh: 45600, cost: 33290 },
+          { period: 'Sem 4 (22-30)', kwh: 44900, cost: 32770 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 6050, cost: 4416 },
+          { period: 'Ter', kwh: 6270, cost: 4577 },
+          { period: 'Qua', kwh: 6410, cost: 4679 },
+          { period: 'Qui', kwh: 6180, cost: 4511 },
+          { period: 'Sex', kwh: 6520, cost: 4760 },
+          { period: 'S\u00e1b', kwh: 4180, cost: 3051 },
+          { period: 'Dom', kwh: 3390, cost: 2475 }
+        ],
+        tariffs: {
+          green: {
+            label: 'Horo-sazonal verde',
+            budget: 130000,
+            accumulatedKwh: 174800,
+            projectedBill: 127600,
+            avgTariff: 0.730,
+            components: [
+              { name: 'Ponta contratada', kwh: 22900, tariff: 1.13, cost: 25877, share: 20.3, reading: 'Ponta dentro do esperado.', tone: 'is-good' },
+              { name: 'Fora de ponta', kwh: 140200, tariff: 0.59, cost: 82718, share: 64.8, reading: 'Peso financeiro principal.', tone: 'is-warning' },
+              { name: 'Encargos e bandeira', kwh: 11700, tariff: 1.62, cost: 19005, share: 14.9, reading: 'Bandeira amarela no per\u00edodo.', tone: 'is-warning' }
+            ],
+            insights: [
+              'Abril fecha dentro do or\u00e7amento com margem de seguran\u00e7a razo\u00e1vel.',
+              'A redu\u00e7\u00e3o natural do consumo no outono ajuda a conter custos.',
+              'Manter o perfil verde continua sendo a escolha mais econ\u00f4mica.'
+            ]
+          },
+          blue: {
+            label: 'Horo-sazonal azul',
+            budget: 130000,
+            accumulatedKwh: 174800,
+            projectedBill: 134280,
+            avgTariff: 0.768,
+            components: [
+              { name: 'Demanda ponta', kwh: 21600, tariff: 1.35, cost: 29160, share: 21.7, reading: 'Demanda ponta elevada no azul.', tone: 'is-warning' },
+              { name: 'Demanda fora de ponta', kwh: 138800, tariff: 0.62, cost: 86056, share: 64.1, reading: 'Componente de maior peso.', tone: 'is-warning' },
+              { name: 'Encargos e bandeira', kwh: 12200, tariff: 1.56, cost: 19064, share: 14.2, reading: 'Encargos moderados.', tone: 'is-warning' }
+            ],
+            insights: [
+              'No modelo azul, abril ultrapassa o or\u00e7amento em cerca de R$ 4.000.',
+              'A demanda contratada de ponta segue pressionando o custo total.',
+              'O modelo verde oferece economia de cerca de R$ 6.700 neste cen\u00e1rio.'
+            ]
+          },
+          flat: {
+            label: 'Convencional',
+            budget: 130000,
+            accumulatedKwh: 174800,
+            projectedBill: 131450,
+            avgTariff: 0.752,
+            components: [
+              { name: 'Energia ativa', kwh: 163600, tariff: 0.68, cost: 111248, share: 84.6, reading: 'Custo base est\u00e1vel.', tone: 'is-warning' },
+              { name: 'Encargos', kwh: 7100, tariff: 1.38, cost: 9798, share: 7.5, reading: 'Encargos dentro da m\u00e9dia.', tone: 'is-good' },
+              { name: 'Tributos e adicionais', kwh: 3800, tariff: 2.74, cost: 10404, share: 7.9, reading: 'Tributos est\u00e1veis.', tone: 'is-good' }
+            ],
+            insights: [
+              'A tarifa convencional fica ligeiramente acima do or\u00e7amento.',
+              'O modelo \u00e9 previs\u00edvel, mas n\u00e3o otimiza os hor\u00e1rios de menor custo.',
+              'Em abril, a diferen\u00e7a entre convencional e verde \u00e9 de quase R$ 4.000.'
+            ]
+          }
+        }
+      },
+      '2026-05': {
+        monthLabel: 'Maio de 2026',
+        daysInMonth: 31,
+        daysPassed: 7,
+        updatedAt: 'Atualizado \u00e0s 09h15',
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 41200, cost: 30890 },
+          { period: 'Sem 2 (08-14)', kwh: 0, cost: 0 },
+          { period: 'Sem 3 (15-21)', kwh: 0, cost: 0 },
+          { period: 'Sem 4 (22-31)', kwh: 0, cost: 0 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 6280, cost: 4710 },
+          { period: 'Ter', kwh: 6450, cost: 4837 },
+          { period: 'Qua', kwh: 6590, cost: 4942 },
+          { period: 'Qui', kwh: 6320, cost: 4740 },
+          { period: 'Sex', kwh: 6710, cost: 5032 },
+          { period: 'S\u00e1b', kwh: 4380, cost: 3285 },
+          { period: 'Dom', kwh: 3640, cost: 2730 }
+        ],
+        tariffs: {
+          green: {
+            label: 'Horo-sazonal verde',
+            budget: 134000,
+            accumulatedKwh: 41200,
+            projectedBill: 136720,
+            avgTariff: 0.750,
+            components: [
+              { name: 'Ponta contratada', kwh: 5600, tariff: 1.18, cost: 6608, share: 21.4, reading: 'Ponta acompanhando ritmo alto.', tone: 'is-warning' },
+              { name: 'Fora de ponta', kwh: 32800, tariff: 0.62, cost: 20336, share: 65.8, reading: 'Fora de ponta j\u00e1 pressiona a proje\u00e7\u00e3o.', tone: 'is-alert' },
+              { name: 'Encargos e bandeira', kwh: 2800, tariff: 1.41, cost: 3946, share: 12.8, reading: 'Bandeira vermelha no in\u00edcio do m\u00eas.', tone: 'is-alert' }
+            ],
+            insights: [
+              'A primeira semana indica que maio pode ultrapassar o or\u00e7amento se o ritmo continuar.',
+              'A bandeira vermelha encarece significativamente o kWh m\u00e9dio.',
+              'Recomenda-se reduzir cargas nos hor\u00e1rios de ponta para conter a proje\u00e7\u00e3o.',
+              'Ainda h\u00e1 24 dias para corrigir a rota e fechar dentro do or\u00e7amento.'
+            ]
+          },
+          blue: {
+            label: 'Horo-sazonal azul',
+            budget: 134000,
+            accumulatedKwh: 41200,
+            projectedBill: 143860,
+            avgTariff: 0.789,
+            components: [
+              { name: 'Demanda ponta', kwh: 5200, tariff: 1.42, cost: 7384, share: 22.6, reading: 'Ponta pressionada no in\u00edcio do m\u00eas.', tone: 'is-alert' },
+              { name: 'Demanda fora de ponta', kwh: 32100, tariff: 0.65, cost: 20865, share: 63.8, reading: 'Componente dominante.', tone: 'is-alert' },
+              { name: 'Encargos e bandeira', kwh: 3900, tariff: 1.14, cost: 4446, share: 13.6, reading: 'Encargos no patamar elevado.', tone: 'is-warning' }
+            ],
+            insights: [
+              'A modalidade azul projeta estouro superior a R$ 9.000 sobre o or\u00e7amento.',
+              'A demanda de ponta elevada agrava o cen\u00e1rio financeiro.',
+              'Migrar para o perfil verde pode economizar cerca de R$ 7.000 este m\u00eas.'
+            ]
+          },
+          flat: {
+            label: 'Convencional',
+            budget: 134000,
+            accumulatedKwh: 41200,
+            projectedBill: 140320,
+            avgTariff: 0.770,
+            components: [
+              { name: 'Energia ativa', kwh: 38600, tariff: 0.71, cost: 27406, share: 85.2, reading: 'Energia ativa elevada na primeira semana.', tone: 'is-alert' },
+              { name: 'Encargos', kwh: 1800, tariff: 1.45, cost: 2610, share: 8.1, reading: 'Encargos proporcionais ao consumo.', tone: 'is-warning' },
+              { name: 'Tributos e adicionais', kwh: 800, tariff: 2.68, cost: 2144, share: 6.7, reading: 'Tributos dentro do esperado.', tone: 'is-good' }
+            ],
+            insights: [
+              'A tarifa convencional tamb\u00e9m indica estouro do or\u00e7amento no ritmo atual.',
+              'O modelo n\u00e3o captura benef\u00edcios do deslocamento de carga hor\u00e1ria.',
+              'O perfil verde continua oferecendo a melhor rela\u00e7\u00e3o custo-consumo.'
             ]
           }
         }
@@ -1679,206 +1460,796 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderForecast() {
-      const month = forecastData[forecastMonthSelect.value];
+      const monthKey = forecastMonthSelect.value;
+      const month = forecastData[monthKey];
+      const view = forecastViewSelect ? forecastViewSelect.value : 'monthly';
       const tariff = month.tariffs[forecastTariffSelect.value];
       const budgetDelta = tariff.projectedBill - tariff.budget;
       const commitment = (tariff.projectedBill / tariff.budget) * 100;
 
       forecastCycleTitle.textContent = month.monthLabel;
       forecastCycleSubtitle.textContent = tariff.label;
-      forecastBudgetLabel.textContent = `Orçamento ${formatCurrency(tariff.budget)}`;
+      forecastBudgetLabel.textContent = 'Or\u00e7amento ' + formatCurrency(tariff.budget);
       forecastUpdatedAt.textContent = month.updatedAt;
-      forecastAccumulatedKwh.textContent = `${new Intl.NumberFormat('pt-BR').format(tariff.accumulatedKwh)} kWh`;
+      forecastAccumulatedKwh.textContent = new Intl.NumberFormat('pt-BR').format(tariff.accumulatedKwh) + ' kWh';
       forecastProjectedBill.textContent = formatCurrency(tariff.projectedBill);
-      forecastBudgetDelta.textContent = `${budgetDelta >= 0 ? '+' : '-'}${formatCurrency(Math.abs(budgetDelta))}`;
-      forecastCommitment.textContent = `${commitment.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
-      forecastGaugeFill.style.width = `${Math.min(commitment, 140)}%`;
+      forecastBudgetDelta.textContent = (budgetDelta >= 0 ? '+' : '-') + formatCurrency(Math.abs(budgetDelta));
+      forecastCommitment.textContent = commitment.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%';
+      forecastGaugeFill.style.width = Math.min(commitment, 140) + '%';
       forecastGaugeLimit.style.left = '100%';
-      forecastNarrative.textContent = `A projeção com tarifa ${tariff.label.toLowerCase()} indica fechamento em ${formatCurrency(tariff.projectedBill)} para ${month.monthLabel}.`;
 
-      tariffStack.innerHTML = tariff.components.map((component) => `
-        <div class="tariff-item">
-          <div class="tariff-item-head">
-            <strong>${component.name}</strong>
-            <span>${component.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</span>
-          </div>
-          <p>${component.reading}</p>
-          <strong class="tariff-item-cost">${formatCurrency(component.cost)}</strong>
-        </div>
-      `).join('');
+      // Daily cost & avg tariff cards
+      var dailyCostVal = Math.round(tariff.projectedBill / month.daysInMonth);
+      var dailyKwhVal = Math.round(tariff.accumulatedKwh / month.daysPassed);
+      if (forecastDailyCost) forecastDailyCost.textContent = formatCurrency(dailyCostVal);
+      if (forecastDailyKwh) forecastDailyKwh.textContent = new Intl.NumberFormat('pt-BR').format(dailyKwhVal) + ' kWh/dia';
+      if (forecastAvgTariff) forecastAvgTariff.textContent = 'R$ ' + tariff.avgTariff.toFixed(3) + '/kWh';
+      if (forecastTariffFlag) {
+        var flagLabel = tariff.avgTariff > 0.76 ? 'Bandeira vermelha' : tariff.avgTariff > 0.72 ? 'Bandeira amarela' : 'Bandeira verde';
+        forecastTariffFlag.textContent = flagLabel;
+      }
 
-      forecastComponentTableBody.innerHTML = tariff.components.map((component) => `
-        <tr>
-          <td>${component.name}</td>
-          <td>${new Intl.NumberFormat('pt-BR').format(component.kwh)} kWh</td>
-          <td>${formatCurrency(component.tariff)}</td>
-          <td>${formatCurrency(component.cost)}</td>
-          <td>${component.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</td>
-          <td><span class="table-status ${component.tone}">${component.reading}</span></td>
-        </tr>
-      `).join('');
+      // Narrative
+      var progressPct = Math.round((month.daysPassed / month.daysInMonth) * 100);
+      var spentPct = Math.round((tariff.accumulatedKwh * tariff.avgTariff / tariff.budget) * 100);
+      forecastNarrative.textContent = 'Com ' + progressPct + '% do m\u00eas consumido (' + month.daysPassed + ' de ' + month.daysInMonth + ' dias), j\u00e1 foram gastos ' + spentPct + '% do or\u00e7amento. A proje\u00e7\u00e3o com tarifa ' + tariff.label.toLowerCase() + ' indica fechamento em ' + formatCurrency(tariff.projectedBill) + '.';
 
-      forecastInsights.innerHTML = tariff.insights.map((item) => `<li>${item}</li>`).join('');
+      // Progress bars by view
+      if (forecastProgressBars) {
+        var periods, budgetPerPeriod, titleText;
+        if (view === 'daily') {
+          periods = month.daily;
+          budgetPerPeriod = Math.round(tariff.budget / month.daysInMonth);
+          titleText = 'Custo estimado por dia da semana';
+        } else if (view === 'weekly') {
+          periods = month.weekly;
+          budgetPerPeriod = Math.round(tariff.budget / 4);
+          titleText = 'Custo estimado por semana';
+        } else {
+          periods = [{ period: month.monthLabel.split(' de ')[0], cost: tariff.projectedBill }];
+          budgetPerPeriod = tariff.budget;
+          titleText = 'Custo mensal projetado vs or\u00e7amento';
+        }
+        if (forecastProgressTitle) forecastProgressTitle.textContent = titleText;
 
+        var maxCost = Math.max(...periods.map(function(p) { return p.cost; }), budgetPerPeriod);
+        forecastProgressBars.innerHTML = periods.filter(function(p) { return p.cost > 0; }).map(function(p) {
+          var pct = (p.cost / (maxCost * 1.15)) * 100;
+          var budgetPct = (budgetPerPeriod / (maxCost * 1.15)) * 100;
+          var ratio = p.cost / budgetPerPeriod;
+          var cls = ratio > 1 ? 'is-over' : ratio > 0.9 ? 'is-warning' : 'is-ok';
+          return '<div class="compliance-bar-group">' +
+            '<span class="compliance-bar-label">' + p.period + '</span>' +
+            '<div class="compliance-bar-track">' +
+            '<div class="compliance-bar-fill ' + cls + '" style="width:' + pct.toFixed(1) + '%"></div>' +
+            '<div class="compliance-bar-limit" style="left:' + Math.min(budgetPct, 100).toFixed(1) + '%"></div>' +
+            '</div>' +
+            '<span class="compliance-bar-value">' + formatCurrency(p.cost) + '</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      // Scenario simulation
+      if (forecastScenario) {
+        var dailyRate = tariff.accumulatedKwh / month.daysPassed;
+        var daysLeft = month.daysInMonth - month.daysPassed;
+        var optimisticKwh = tariff.accumulatedKwh + (dailyRate * 0.85 * daysLeft);
+        var normalKwh = tariff.accumulatedKwh + (dailyRate * daysLeft);
+        var pessimisticKwh = tariff.accumulatedKwh + (dailyRate * 1.15 * daysLeft);
+        var optimisticCost = optimisticKwh * tariff.avgTariff;
+        var normalCost = normalKwh * tariff.avgTariff;
+        var pessimisticCost = pessimisticKwh * tariff.avgTariff;
+
+        var scenarios = [
+          {
+            label: 'Cen\u00e1rio otimista (-15% consumo)',
+            value: formatCurrency(optimisticCost),
+            delta: formatCurrency(Math.abs(optimisticCost - tariff.budget)),
+            indicator: optimisticCost <= tariff.budget ? 'is-ok' : 'is-warning',
+            status: optimisticCost <= tariff.budget ? 'Dentro do or\u00e7amento' : 'Acima do or\u00e7amento'
+          },
+          {
+            label: 'Cen\u00e1rio atual (ritmo mantido)',
+            value: formatCurrency(normalCost),
+            delta: formatCurrency(Math.abs(normalCost - tariff.budget)),
+            indicator: normalCost <= tariff.budget ? 'is-ok' : normalCost <= tariff.budget * 1.05 ? 'is-warning' : 'is-over',
+            status: normalCost <= tariff.budget ? 'Dentro do or\u00e7amento' : 'Acima do or\u00e7amento'
+          },
+          {
+            label: 'Cen\u00e1rio pessimista (+15% consumo)',
+            value: formatCurrency(pessimisticCost),
+            delta: formatCurrency(Math.abs(pessimisticCost - tariff.budget)),
+            indicator: pessimisticCost <= tariff.budget ? 'is-ok' : 'is-over',
+            status: pessimisticCost <= tariff.budget ? 'Dentro do or\u00e7amento' : 'Acima do or\u00e7amento'
+          }
+        ];
+
+        forecastScenario.innerHTML = scenarios.map(function(s) {
+          return '<div class="compliance-summary-item">' +
+            '<strong>' + s.label + '</strong>' +
+            '<span>Fechamento estimado: ' + s.value + '</span>' +
+            '<span class="compliance-indicator ' + s.indicator + '"><span class="compliance-indicator-dot"></span> ' + s.status + ' (' + (s.indicator === 'is-ok' ? 'folga' : 'desvio') + ' de ' + s.delta + ')</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      // Tariff stack
+      tariffStack.innerHTML = tariff.components.map(function(component) {
+        return '<div class="tariff-item">' +
+          '<div class="tariff-item-head">' +
+          '<strong>' + component.name + '</strong>' +
+          '<span>' + component.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%</span>' +
+          '</div>' +
+          '<p>' + component.reading + '</p>' +
+          '<strong class="tariff-item-cost">' + formatCurrency(component.cost) + '</strong>' +
+          '</div>';
+      }).join('');
+
+      // Component table
+      forecastComponentTableBody.innerHTML = tariff.components.map(function(component) {
+        return '<tr>' +
+          '<td>' + component.name + '</td>' +
+          '<td>' + new Intl.NumberFormat('pt-BR').format(component.kwh) + ' kWh</td>' +
+          '<td>' + formatCurrency(component.tariff) + '</td>' +
+          '<td>' + formatCurrency(component.cost) + '</td>' +
+          '<td>' + component.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + '%</td>' +
+          '<td><span class="table-status ' + component.tone + '">' + component.reading + '</span></td>' +
+          '</tr>';
+      }).join('');
+
+      // Insights
+      var enrichedInsights = tariff.insights.slice();
+      if (month.daysPassed < month.daysInMonth) {
+        enrichedInsights.push('Faltam ' + (month.daysInMonth - month.daysPassed) + ' dias para o fechamento. O custo di\u00e1rio m\u00e9dio \u00e9 de ' + formatCurrency(dailyCostVal) + '.');
+      }
+      if (budgetDelta > 0 && month.daysPassed < month.daysInMonth) {
+        var targetDaily = (tariff.budget - tariff.accumulatedKwh * tariff.avgTariff) / (month.daysInMonth - month.daysPassed);
+        enrichedInsights.push('Para fechar no or\u00e7amento, o custo di\u00e1rio precisa cair para ' + formatCurrency(Math.max(targetDaily, 0)) + ' nos dias restantes.');
+      }
+      forecastInsights.innerHTML = enrichedInsights.map(function(item) { return '<li>' + item + '</li>'; }).join('');
+
+      // Status
       if (budgetDelta > 0) {
-        setStandaloneStatus(forecastStatus, 'error', `A previsão excede o orçamento em ${formatCurrency(budgetDelta)}. O momento pede ajuste de carga e revisão do plano financeiro.`);
+        setStandaloneStatus(forecastStatus, 'error', 'A previs\u00e3o excede o or\u00e7amento em ' + formatCurrency(budgetDelta) + '. O momento pede ajuste de carga e revis\u00e3o do plano financeiro.');
       } else if (budgetDelta > -5000) {
-        setStandaloneStatus(forecastStatus, 'warning', 'A previsão ainda cabe no orçamento, mas com margem curta. Vale acompanhar diariamente.');
+        setStandaloneStatus(forecastStatus, 'warning', 'A previs\u00e3o ainda cabe no or\u00e7amento, mas com margem curta. Vale acompanhar diariamente.');
       } else {
-        setStandaloneStatus(forecastStatus, 'success', 'A previsão está abaixo do orçamento com margem confortável no cenário atual.');
+        setStandaloneStatus(forecastStatus, 'success', 'A previs\u00e3o est\u00e1 abaixo do or\u00e7amento com margem confort\u00e1vel no cen\u00e1rio atual.');
       }
     }
 
     forecastMonthSelect.addEventListener('change', renderForecast);
     forecastTariffSelect.addEventListener('change', renderForecast);
+    if (forecastViewSelect) forecastViewSelect.addEventListener('change', renderForecast);
     renderForecast();
   }
 
-  const costPeriodSelect = document.getElementById('costPeriodSelect');
-  if (costPeriodSelect) {
-    const costViewSelect = document.getElementById('costViewSelect');
-    const costStatus = document.getElementById('costStatus');
-    const costCycleTitle = document.getElementById('costCycleTitle');
-    const costCycleSubtitle = document.getElementById('costCycleSubtitle');
-    const costTopLabel = document.getElementById('costTopLabel');
-    const costTotalLabel = document.getElementById('costTotalLabel');
-    const costTopEntity = document.getElementById('costTopEntity');
-    const costTopShare = document.getElementById('costTopShare');
-    const costAboveAverage = document.getElementById('costAboveAverage');
-    const costAverageValue = document.getElementById('costAverageValue');
-    const costLeaderboard = document.getElementById('costLeaderboard');
-    const costInsights = document.getElementById('costInsights');
-    const costTableBody = document.getElementById('costTableBody');
-    const costBars = document.getElementById('costBars');
 
-    const costData = {
-      '2026-01': {
-        sector: [
-          { name: 'Refrigeração', category: 'Setor', cost: 46200, share: 34.8, variation: 3.2, reading: 'Maior centro de custo do mês.', tone: 'is-alert' },
-          { name: 'Climatização', category: 'Setor', cost: 33400, share: 25.2, variation: 1.4, reading: 'Custo alto, mas estável.', tone: 'is-warning' },
-          { name: 'Operação de loja', category: 'Setor', cost: 28100, share: 21.2, variation: -2.1, reading: 'Queda leve frente ao mês anterior.', tone: 'is-good' },
-          { name: 'Padaria e apoio', category: 'Setor', cost: 25100, share: 18.8, variation: 4.6, reading: 'Subiu e pede revisão de apoio térmico.', tone: 'is-warning' }
-        ],
+  // ── Anomaly Detection Page ──
+  const anomalyPeriodSelect = document.getElementById('anomalyPeriodSelect');
+  if (anomalyPeriodSelect) {
+    const anomalyTypeSelect = document.getElementById('anomalyTypeSelect');
+    const anomalyStatus = document.getElementById('anomalyStatus');
+    const anomalyTotal = document.getElementById('anomalyTotal');
+    const anomalySpikes = document.getElementById('anomalySpikes');
+    const anomalyMaintenance = document.getElementById('anomalyMaintenance');
+    const anomalySavings = document.getElementById('anomalySavings');
+    const anomalyEquipCount = document.getElementById('anomalyEquipCount');
+    const anomalyAlertCount = document.getElementById('anomalyAlertCount');
+    const anomalySeverity = document.getElementById('anomalySeverity');
+    const anomalyOverallStatus = document.getElementById('anomalyOverallStatus');
+    const anomalyTableBody = document.getElementById('anomalyTableBody');
+    const anomalyAlertList = document.getElementById('anomalyAlertList');
+    const anomalyBars = document.getElementById('anomalyBars');
+    const maintenanceList = document.getElementById('maintenanceList');
+    const anomalyMaxDeviation = document.getElementById('anomalyMaxDeviation');
+    const anomalyMaxDeviationEquip = document.getElementById('anomalyMaxDeviationEquip');
+    const anomalyWasteCost = document.getElementById('anomalyWasteCost');
+    const anomalyWasteLabel = document.getElementById('anomalyWasteLabel');
+    const anomalyTrendList = document.getElementById('anomalyTrendList');
+    const anomalyHourlyBars = document.getElementById('anomalyHourlyBars');
+
+    var tariffPerKwh = 0.75;
+
+    const anomalyData = {
+      '7d': {
         equipment: [
-          { name: 'Câmara fria 01', category: 'Refrigeração', cost: 21400, share: 16.1, variation: 2.8, reading: 'Equipamento líder de custo.', tone: 'is-alert' },
-          { name: 'Chiller salão', category: 'Climatização', cost: 18600, share: 14.0, variation: 1.2, reading: 'Peso financeiro contínuo.', tone: 'is-warning' },
-          { name: 'Expositores aquecidos', category: 'Padaria e apoio', cost: 15100, share: 11.4, variation: 5.1, reading: 'Alta recente de custo.', tone: 'is-warning' },
-          { name: 'Iluminação corredor A', category: 'Operação de loja', cost: 12800, share: 9.6, variation: -3.0, reading: 'Redução após ajustes.', tone: 'is-good' }
+          { name: 'Compressor 01', type: 'compressor', current: 18.4, expected: 14.2, status: 'critical', action: 'Agendar manuten\u00e7\u00e3o', trend: 'worsening', lastPeak: 'Hoje, 06:12', hoursAbove: 42 },
+          { name: 'Compressor 02', type: 'compressor', current: 15.1, expected: 14.8, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor bomba d\u2019\u00e1gua', type: 'motor', current: 9.7, expected: 7.2, status: 'warning', action: 'Inspecionar rolamento', trend: 'worsening', lastPeak: 'Hoje, 08:45', hoursAbove: 28 },
+          { name: 'Motor exaustor', type: 'motor', current: 5.3, expected: 5.1, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 03', type: 'compressor', current: 16.9, expected: 14.0, status: 'warning', action: 'Verificar g\u00e1s refrigerante', trend: 'worsening', lastPeak: 'Ontem, 14:20', hoursAbove: 18 },
+          { name: 'Motor esteira', type: 'motor', current: 4.1, expected: 3.8, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 04', type: 'compressor', current: 12.8, expected: 12.5, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor ventila\u00e7\u00e3o', type: 'motor', current: 6.8, expected: 6.4, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 }
+        ],
+        hourlyPeaks: [
+          { hour: '00-04', picos: 1, avgKw: 8.2 },
+          { hour: '04-08', picos: 4, avgKw: 14.8 },
+          { hour: '08-12', picos: 6, avgKw: 16.3 },
+          { hour: '12-16', picos: 3, avgKw: 15.1 },
+          { hour: '16-20', picos: 5, avgKw: 15.9 },
+          { hour: '20-24', picos: 2, avgKw: 10.4 }
+        ],
+        alerts: [
+          { equip: 'Compressor 01', msg: 'Pico de 29,6% acima da m\u00e9dia sustentado por 3h', level: 'critical', time: 'Hoje, 06:12' },
+          { equip: 'Motor bomba d\u2019\u00e1gua', msg: 'Consumo 34,7% acima do esperado nas \u00faltimas 24h', level: 'warning', time: 'Hoje, 08:45' },
+          { equip: 'Compressor 03', msg: 'Desvio crescente de 20,7% nos \u00faltimos 3 dias', level: 'warning', time: 'Ontem, 14:20' },
+          { equip: 'Compressor 01', msg: 'Vibra\u00e7\u00e3o anormal detectada no sensor auxiliar', level: 'critical', time: 'Hoje, 05:48' }
+        ],
+        maintenance: [
+          { equip: 'Compressor 01', task: 'Revis\u00e3o completa \u2014 poss\u00edvel desgaste no pist\u00e3o', priority: 'high', saving: 'R$ 1.840/m\u00eas', estimatedFailure: '~15 dias' },
+          { equip: 'Motor bomba d\u2019\u00e1gua', task: 'Inspe\u00e7\u00e3o de rolamento e alinhamento', priority: 'high', saving: 'R$ 920/m\u00eas', estimatedFailure: '~30 dias' },
+          { equip: 'Compressor 03', task: 'Verificar n\u00edvel de g\u00e1s refrigerante e vedar vazamento', priority: 'medium', saving: 'R$ 680/m\u00eas', estimatedFailure: '~45 dias' }
         ]
       },
-      '2026-02': {
-        sector: [
-          { name: 'Refrigeração', category: 'Setor', cost: 43800, share: 33.1, variation: -5.2, reading: 'Continua líder, mas caiu.', tone: 'is-warning' },
-          { name: 'Climatização', category: 'Setor', cost: 31900, share: 24.1, variation: -4.5, reading: 'Melhora após campanhas.', tone: 'is-good' },
-          { name: 'Operação de loja', category: 'Setor', cost: 29700, share: 22.4, variation: 5.7, reading: 'Subiu com maior ocupação.', tone: 'is-warning' },
-          { name: 'Padaria e apoio', category: 'Setor', cost: 27000, share: 20.4, variation: 7.6, reading: 'Pressão de custo segue alta.', tone: 'is-alert' }
-        ],
+      '30d': {
         equipment: [
-          { name: 'Câmara fria 01', category: 'Refrigeração', cost: 20100, share: 15.2, variation: -6.1, reading: 'Melhorou, mas ainda lidera.', tone: 'is-warning' },
-          { name: 'Forno apoio', category: 'Padaria e apoio', cost: 17200, share: 13.0, variation: 8.9, reading: 'Equipamento mais pressionado.', tone: 'is-alert' },
-          { name: 'Chiller salão', category: 'Climatização', cost: 16500, share: 12.5, variation: -4.3, reading: 'Boa resposta a ajustes.', tone: 'is-good' },
-          { name: 'Ilha congelados', category: 'Refrigeração', cost: 14100, share: 10.6, variation: 2.2, reading: 'Peso financeiro persistente.', tone: 'is-warning' }
+          { name: 'Compressor 01', type: 'compressor', current: 17.8, expected: 14.2, status: 'warning', action: 'Agendar manuten\u00e7\u00e3o', trend: 'worsening', lastPeak: '12/04/2026', hoursAbove: 156 },
+          { name: 'Compressor 02', type: 'compressor', current: 14.9, expected: 14.8, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor bomba d\u2019\u00e1gua', type: 'motor', current: 8.9, expected: 7.2, status: 'warning', action: 'Inspecionar rolamento', trend: 'worsening', lastPeak: '08/04/2026', hoursAbove: 98 },
+          { name: 'Motor exaustor', type: 'motor', current: 5.2, expected: 5.1, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 03', type: 'compressor', current: 15.4, expected: 14.0, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: '28/03/2026', hoursAbove: 12 },
+          { name: 'Motor esteira', type: 'motor', current: 4.0, expected: 3.8, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 04', type: 'compressor', current: 13.1, expected: 12.5, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor ventila\u00e7\u00e3o', type: 'motor', current: 6.6, expected: 6.4, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: null, hoursAbove: 0 }
+        ],
+        hourlyPeaks: [
+          { hour: '00-04', picos: 3, avgKw: 7.9 },
+          { hour: '04-08', picos: 12, avgKw: 14.2 },
+          { hour: '08-12', picos: 18, avgKw: 15.8 },
+          { hour: '12-16', picos: 10, avgKw: 14.6 },
+          { hour: '16-20', picos: 14, avgKw: 15.2 },
+          { hour: '20-24', picos: 5, avgKw: 9.8 }
+        ],
+        alerts: [
+          { equip: 'Compressor 01', msg: 'M\u00e9dia mensal 25,4% acima do baseline', level: 'warning', time: '12/04/2026' },
+          { equip: 'Motor bomba d\u2019\u00e1gua', msg: 'Tend\u00eancia de alta em 4 das \u00faltimas 5 semanas', level: 'warning', time: '08/04/2026' }
+        ],
+        maintenance: [
+          { equip: 'Compressor 01', task: 'Manuten\u00e7\u00e3o preventiva programada', priority: 'medium', saving: 'R$ 1.420/m\u00eas', estimatedFailure: '~30 dias' },
+          { equip: 'Motor bomba d\u2019\u00e1gua', task: 'Substituir rolamento e lubrificar eixo', priority: 'medium', saving: 'R$ 780/m\u00eas', estimatedFailure: '~60 dias' }
         ]
       },
-      '2026-03': {
-        sector: [
-          { name: 'Refrigeração', category: 'Setor', cost: 48900, share: 35.7, variation: 4.9, reading: 'Principal alvo para corte no mês.', tone: 'is-alert' },
-          { name: 'Climatização', category: 'Setor', cost: 35200, share: 25.7, variation: 3.8, reading: 'Custo relevante e crescente.', tone: 'is-warning' },
-          { name: 'Operação de loja', category: 'Setor', cost: 30100, share: 22.0, variation: 1.3, reading: 'Peso mediano com pouca folga.', tone: 'is-warning' },
-          { name: 'Padaria e apoio', category: 'Setor', cost: 22800, share: 16.6, variation: -3.7, reading: 'Redução recente melhorou a posição.', tone: 'is-good' }
-        ],
+      '90d': {
         equipment: [
-          { name: 'Câmara fria 01', category: 'Refrigeração', cost: 22600, share: 16.5, variation: 6.3, reading: 'Maior custo unitário do ciclo.', tone: 'is-alert' },
-          { name: 'Chiller salão', category: 'Climatização', cost: 19400, share: 14.2, variation: 5.1, reading: 'Pressão alta no conforto térmico.', tone: 'is-warning' },
-          { name: 'Expositor congelados', category: 'Refrigeração', cost: 16800, share: 12.3, variation: 3.4, reading: 'Custo ainda crescente.', tone: 'is-warning' },
-          { name: 'Forno apoio', category: 'Padaria e apoio', cost: 12100, share: 8.8, variation: -4.2, reading: 'Melhorou após controle de uso.', tone: 'is-good' }
+          { name: 'Compressor 01', type: 'compressor', current: 16.5, expected: 14.2, status: 'warning', action: 'Planejar troca', trend: 'worsening', lastPeak: '12/04/2026', hoursAbove: 380 },
+          { name: 'Compressor 02', type: 'compressor', current: 14.6, expected: 14.8, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor bomba d\u2019\u00e1gua', type: 'motor', current: 8.1, expected: 7.2, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: '08/04/2026', hoursAbove: 45 },
+          { name: 'Motor exaustor', type: 'motor', current: 5.4, expected: 5.1, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 03', type: 'compressor', current: 14.8, expected: 14.0, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: '28/03/2026', hoursAbove: 18 },
+          { name: 'Motor esteira', type: 'motor', current: 4.2, expected: 3.8, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Compressor 04', type: 'compressor', current: 12.9, expected: 12.5, status: 'normal', action: 'Monitorar', trend: 'stable', lastPeak: null, hoursAbove: 0 },
+          { name: 'Motor ventila\u00e7\u00e3o', type: 'motor', current: 6.5, expected: 6.4, status: 'normal', action: 'Monitorar', trend: 'improving', lastPeak: null, hoursAbove: 0 }
+        ],
+        hourlyPeaks: [
+          { hour: '00-04', picos: 8, avgKw: 7.5 },
+          { hour: '04-08', picos: 32, avgKw: 13.8 },
+          { hour: '08-12', picos: 48, avgKw: 15.2 },
+          { hour: '12-16', picos: 28, avgKw: 14.1 },
+          { hour: '16-20', picos: 38, avgKw: 14.7 },
+          { hour: '20-24', picos: 12, avgKw: 9.2 }
+        ],
+        alerts: [
+          { equip: 'Compressor 01', msg: 'Desgaste progressivo detectado no trimestre', level: 'warning', time: 'Fev-Mai 2026' }
+        ],
+        maintenance: [
+          { equip: 'Compressor 01', task: 'Avaliar substitui\u00e7\u00e3o do equipamento por modelo mais eficiente', priority: 'low', saving: 'R$ 3.200/trimestre', estimatedFailure: '~90 dias' }
         ]
       }
     };
 
-    function renderCostRanking() {
-      const period = costData[costPeriodSelect.value];
-      const view = costViewSelect.value;
-      const items = [...period[view]].sort((a, b) => b.cost - a.cost);
-      const total = items.reduce((sum, item) => sum + item.cost, 0);
-      const average = total / items.length;
-      const top = items[0];
-      const aboveAverage = items.filter((item) => item.cost > average).length;
-      const highestCost = Math.max(...items.map((item) => item.cost));
+    function renderAnomalyPage() {
+      var period = anomalyPeriodSelect.value;
+      var typeFilter = anomalyTypeSelect.value;
+      var data = anomalyData[period];
+      var filtered = typeFilter === 'all'
+        ? data.equipment
+        : data.equipment.filter(function(e) { return e.type === typeFilter; });
 
-      costCycleTitle.textContent = ({
-        '2026-01': 'Janeiro de 2026',
-        '2026-02': 'Fevereiro de 2026',
-        '2026-03': 'Março de 2026'
-      })[costPeriodSelect.value];
-      costCycleSubtitle.textContent = view === 'sector' ? 'Custos consolidados por setor' : 'Custos consolidados por equipamento';
-      costTopLabel.textContent = `Maior custo: ${top.name}`;
-      costTotalLabel.textContent = `Total monitorado ${formatCurrency(total)}`;
-      costTopEntity.textContent = top.name;
-      costTopShare.textContent = `${top.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`;
-      costAboveAverage.textContent = String(aboveAverage);
-      costAverageValue.textContent = formatCurrency(average);
+      var anomalies = filtered.filter(function(e) { return e.status !== 'normal'; });
+      var spikes = filtered.filter(function(e) { return ((e.current - e.expected) / e.expected) * 100 > 20; });
+      var criticals = filtered.filter(function(e) { return e.status === 'critical'; });
+      var totalSaving = data.maintenance.reduce(function(sum, m) {
+        var val = parseFloat(m.saving.replace(/[^\d]/g, ''));
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
 
-      costLeaderboard.innerHTML = items.map((item, index) => `
-        <div class="leaderboard-row">
-          <div class="leaderboard-rank">${index + 1}</div>
-          <div class="leaderboard-main">
-            <strong>${item.name}</strong>
-            <span>${item.category}</span>
-          </div>
-          <div class="leaderboard-score">
-            <strong>${formatCurrency(item.cost)}</strong>
-            <span>${item.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% do total</span>
-          </div>
-        </div>
-      `).join('');
+      anomalyTotal.textContent = anomalies.length;
+      anomalySpikes.textContent = spikes.length;
+      anomalyMaintenance.textContent = data.maintenance.length;
+      anomalySavings.textContent = 'R$ ' + new Intl.NumberFormat('pt-BR').format(totalSaving);
+      anomalyEquipCount.textContent = filtered.length + ' equipamentos monitorados';
+      anomalyAlertCount.textContent = data.alerts.length + (data.alerts.length === 1 ? ' alerta ativo' : ' alertas ativos');
+      anomalySeverity.textContent = criticals.length > 0 ? criticals.length + ' cr\u00edtico' + (criticals.length > 1 ? 's' : '') : 'Nenhum cr\u00edtico';
 
-      costTableBody.innerHTML = items.map((item) => `
-        <tr>
-          <td>${item.name}</td>
-          <td>${item.category}</td>
-          <td>${formatCurrency(item.cost)}</td>
-          <td>${item.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</td>
-          <td class="${item.variation > 0 ? 'is-alert' : 'is-good'}">${item.variation > 0 ? '+' : ''}${item.variation.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</td>
-          <td><span class="table-status ${item.tone}">${item.reading}</span></td>
-        </tr>
-      `).join('');
+      // Max deviation card
+      var deviations = filtered.map(function(e) { return { name: e.name, dev: ((e.current - e.expected) / e.expected) * 100 }; });
+      deviations.sort(function(a, b) { return b.dev - a.dev; });
+      if (anomalyMaxDeviation) anomalyMaxDeviation.textContent = '+' + deviations[0].dev.toFixed(1) + '%';
+      if (anomalyMaxDeviationEquip) anomalyMaxDeviationEquip.textContent = deviations[0].name;
 
-      costBars.innerHTML = items.map((item) => `
-        <article class="compare-bar-card">
-          <div class="compare-bar-head">
-            <strong>${item.name}</strong>
-            <span>${formatCurrency(item.cost)}</span>
-          </div>
-          <div class="compare-bar-row">
-            <span>Impacto</span>
-            <div class="compare-bar-track"><div class="compare-bar-fill after-fill" style="width:${(item.cost / highestCost) * 100}%"></div></div>
-            <strong>${item.share.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%</strong>
-          </div>
-        </article>
-      `).join('');
+      // Waste cost card
+      var wasteKwh = filtered.reduce(function(sum, e) {
+        var excess = e.current - e.expected;
+        return sum + (excess > 0 ? excess * e.hoursAbove : 0);
+      }, 0);
+      var wasteCost = wasteKwh * tariffPerKwh;
+      if (anomalyWasteCost) anomalyWasteCost.textContent = 'R$ ' + new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(wasteCost);
+      if (anomalyWasteLabel) {
+        var wasteEquips = filtered.filter(function(e) { return e.current > e.expected && e.hoursAbove > 0; }).length;
+        anomalyWasteLabel.textContent = wasteEquips + ' equipamento' + (wasteEquips !== 1 ? 's' : '') + ' com excesso';
+      }
 
-      costInsights.innerHTML = [
-        `${top.name} é o primeiro alvo para corte porque lidera o ranking e concentra a maior fatia do gasto.`,
-        aboveAverage > 1
-          ? `${aboveAverage} itens já estão acima da média de custo e merecem revisão imediata.`
-          : 'A maior parte dos itens está próxima da média, com um líder isolado de custo.',
-        view === 'sector'
-          ? 'Use o ranking setorial para decidir onde concentrar plano de redução no próximo mês.'
-          : 'Use o ranking por equipamento para orientar manutenção, automação e desligamento seletivo.'
-      ].map((item) => `<li>${item}</li>`).join('');
-
-      if (top.share > 35) {
-        setStandaloneStatus(costStatus, 'error', `${top.name} concentra uma parcela muito alta do custo total. O corte deve começar por esse item.`);
-      } else if (aboveAverage >= 2) {
-        setStandaloneStatus(costStatus, 'warning', 'Há mais de um item acima da média. Vale priorizar uma frente de redução em lote.');
+      if (criticals.length > 0) {
+        anomalyOverallStatus.textContent = 'Cr\u00edtico';
+        anomalyOverallStatus.className = 'status-pill is-alert';
+      } else if (anomalies.length > 0) {
+        anomalyOverallStatus.textContent = 'Aten\u00e7\u00e3o';
+        anomalyOverallStatus.className = 'status-pill is-warning';
       } else {
-        setStandaloneStatus(costStatus, 'success', 'O custo está relativamente distribuído, com poucos itens puxando o total.');
+        anomalyOverallStatus.textContent = 'Normal';
+        anomalyOverallStatus.className = 'status-pill is-good';
+      }
+
+      // Table
+      anomalyTableBody.innerHTML = filtered.map(function(e) {
+        var deviation = ((e.current - e.expected) / e.expected * 100);
+        var statusClass = e.status === 'critical' ? 'is-alert' : e.status === 'warning' ? 'is-warning' : 'is-good';
+        var statusLabel = e.status === 'critical' ? 'Cr\u00edtico' : e.status === 'warning' ? 'Aten\u00e7\u00e3o' : 'Normal';
+        var trendIcon = e.trend === 'worsening' ? '\u2191 Piorando' : e.trend === 'improving' ? '\u2193 Melhorando' : '\u2194 Est\u00e1vel';
+        var trendCls = e.trend === 'worsening' ? 'trend-down' : e.trend === 'improving' ? 'trend-up' : '';
+        return '<tr>' +
+          '<td>' + e.name + '</td>' +
+          '<td>' + (e.type === 'compressor' ? 'Compressor' : 'Motor') + '</td>' +
+          '<td>' + e.current.toFixed(1) + ' kW</td>' +
+          '<td>' + e.expected.toFixed(1) + ' kW</td>' +
+          '<td class="' + (deviation > 20 ? 'trend-alert' : deviation > 5 ? 'trend-warning' : '') + '">' + (deviation > 0 ? '+' : '') + deviation.toFixed(1) + '%</td>' +
+          '<td><span class="table-status ' + statusClass + '">' + statusLabel + '</span></td>' +
+          '<td><span class="' + trendCls + '" style="font-size:0.82rem;font-weight:700">' + trendIcon + '</span></td>' +
+          '</tr>';
+      }).join('');
+
+      // Alerts
+      anomalyAlertList.innerHTML = data.alerts.map(function(a) {
+        var cls = a.level === 'critical' ? 'is-critical' : a.level === 'warning' ? 'is-warning' : 'is-normal';
+        return '<div class="anomaly-alert-item ' + cls + '">' +
+          '<strong>' + a.equip + '</strong>' +
+          '<span>' + a.msg + '</span>' +
+          '<span class="alert-time">' + a.time + '</span>' +
+          '</div>';
+      }).join('') || '<div class="anomaly-alert-item"><span>Nenhum alerta no per\u00edodo.</span></div>';
+
+      // Bars chart
+      var maxCurrent = Math.max.apply(null, filtered.map(function(e) { return e.current; }));
+      anomalyBars.innerHTML = filtered.map(function(e) {
+        var pct = (e.current / (maxCurrent * 1.15)) * 100;
+        var baselinePct = (e.expected / (maxCurrent * 1.15)) * 100;
+        var cls = e.status === 'critical' ? 'is-critical' : e.status === 'warning' ? 'is-warning' : 'is-normal';
+        return '<div class="anomaly-bar-row">' +
+          '<span class="anomaly-bar-label">' + e.name + '</span>' +
+          '<div class="anomaly-bar-track">' +
+          '<div class="anomaly-bar-fill ' + cls + '" style="width:' + pct.toFixed(1) + '%"></div>' +
+          '<div class="anomaly-bar-baseline" style="left:' + baselinePct.toFixed(1) + '%"></div>' +
+          '</div>' +
+          '<span class="anomaly-bar-value">' + e.current.toFixed(1) + ' kW</span>' +
+          '</div>';
+      }).join('');
+
+      // Trend list
+      if (anomalyTrendList) {
+        var worsening = filtered.filter(function(e) { return e.trend === 'worsening'; });
+        var stable = filtered.filter(function(e) { return e.trend === 'stable'; });
+        var improving = filtered.filter(function(e) { return e.trend === 'improving'; });
+        anomalyTrendList.innerHTML = [
+          { label: 'Piorando', count: worsening.length, names: worsening.map(function(e) { return e.name; }).join(', '), indicator: 'is-over' },
+          { label: 'Est\u00e1vel', count: stable.length, names: stable.map(function(e) { return e.name; }).join(', '), indicator: 'is-warning' },
+          { label: 'Melhorando', count: improving.length, names: improving.map(function(e) { return e.name; }).join(', '), indicator: 'is-ok' }
+        ].map(function(item) {
+          return '<div class="compliance-summary-item">' +
+            '<strong>' + item.label + '</strong>' +
+            '<span>' + item.count + ' equipamento' + (item.count !== 1 ? 's' : '') + '</span>' +
+            '<span class="compliance-indicator ' + item.indicator + '"><span class="compliance-indicator-dot"></span> ' + (item.names || 'Nenhum') + '</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      // Hourly peaks chart
+      if (anomalyHourlyBars && data.hourlyPeaks) {
+        var maxPicos = Math.max.apply(null, data.hourlyPeaks.map(function(h) { return h.picos; }));
+        anomalyHourlyBars.innerHTML = data.hourlyPeaks.map(function(h) {
+          var pct = (h.picos / (maxPicos * 1.15)) * 100;
+          var cls = h.picos >= maxPicos * 0.8 ? 'is-critical' : h.picos >= maxPicos * 0.5 ? 'is-warning' : 'is-normal';
+          return '<div class="anomaly-bar-row">' +
+            '<span class="anomaly-bar-label">' + h.hour + 'h</span>' +
+            '<div class="anomaly-bar-track">' +
+            '<div class="anomaly-bar-fill ' + cls + '" style="width:' + pct.toFixed(1) + '%"></div>' +
+            '</div>' +
+            '<span class="anomaly-bar-value">' + h.picos + ' pico' + (h.picos !== 1 ? 's' : '') + ' (' + h.avgKw.toFixed(1) + ' kW)</span>' +
+            '</div>';
+        }).join('');
+      }
+
+      // Maintenance suggestions
+      maintenanceList.innerHTML = data.maintenance.map(function(m) {
+        var prioLabel = m.priority === 'high' ? 'Alta' : m.priority === 'medium' ? 'M\u00e9dia' : 'Baixa';
+        var failureHtml = m.estimatedFailure ? '<span style="font-size:0.78rem;color:var(--text-secondary);margin-top:2px">Falha estimada: ' + m.estimatedFailure + '</span>' : '';
+        return '<div class="maintenance-item">' +
+          '<strong>' + m.equip + '</strong>' +
+          '<span>' + m.task + '</span>' +
+          failureHtml +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px">' +
+          '<span class="maintenance-priority is-' + m.priority + '"><span class="priority-dot"></span> ' + prioLabel + '</span>' +
+          '<span style="font-size:0.84rem;font-weight:700;color:var(--color-success)">Economia: ' + m.saving + '</span>' +
+          '</div>' +
+          '</div>';
+      }).join('') || '<div class="maintenance-item"><span>Nenhuma manuten\u00e7\u00e3o sugerida.</span></div>';
+
+      // Status message
+      if (criticals.length > 0) {
+        setStandaloneStatus(anomalyStatus, 'error', criticals.length + ' equipamento(s) com anomalia cr\u00edtica. Manuten\u00e7\u00e3o urgente recomendada.');
+      } else if (anomalies.length > 0) {
+        setStandaloneStatus(anomalyStatus, 'warning', anomalies.length + ' equipamento(s) com desvio acima do normal. Acompanhe a evolu\u00e7\u00e3o.');
+      } else {
+        setStandaloneStatus(anomalyStatus, 'success', 'Todos os equipamentos operam dentro dos par\u00e2metros esperados.');
       }
     }
 
-    costPeriodSelect.addEventListener('change', renderCostRanking);
-    costViewSelect.addEventListener('change', renderCostRanking);
-    renderCostRanking();
+    anomalyPeriodSelect.addEventListener('change', renderAnomalyPage);
+    anomalyTypeSelect.addEventListener('change', renderAnomalyPage);
+    renderAnomalyPage();
+  }
+
+  // ── Compliance Report Page ──
+  const complianceViewSelect = document.getElementById('complianceViewSelect');
+  if (complianceViewSelect) {
+    const complianceMonthSelect = document.getElementById('complianceMonthSelect');
+    const complianceStatus = document.getElementById('complianceStatus');
+    const complianceTotalKwh = document.getElementById('complianceTotalKwh');
+    const complianceLimit = document.getElementById('complianceLimit');
+    const complianceUsage = document.getElementById('complianceUsage');
+    const complianceCost = document.getElementById('complianceCost');
+    const complianceScore = document.getElementById('complianceScore');
+    const complianceLabel = document.getElementById('complianceLabel');
+    const compliancePeriodLabel = document.getElementById('compliancePeriodLabel');
+    const complianceTableBody = document.getElementById('complianceTableBody');
+    const complianceTableFoot = document.getElementById('complianceTableFoot');
+    const complianceBars = document.getElementById('complianceBars');
+    const complianceSummary = document.getElementById('complianceSummary');
+    const complianceInsights = document.getElementById('complianceInsights');
+    const complianceExportCsv = document.getElementById('complianceExportCsv');
+    const complianceExportPdf = document.getElementById('complianceExportPdf');
+    const complianceTotalTrend = document.getElementById('complianceTotalTrend');
+    const complianceUsageTrend = document.getElementById('complianceUsageTrend');
+    const complianceCostTrend = document.getElementById('complianceCostTrend');
+    const complianceDailyAvg = document.getElementById('complianceDailyAvg');
+    const compliancePeak = document.getElementById('compliancePeak');
+    const compliancePeakLabel = document.getElementById('compliancePeakLabel');
+
+    const complianceData = {
+      '2026-01': {
+        label: 'Janeiro de 2026',
+        daysInMonth: 31,
+        contractLimit: 135000,
+        tariff: 0.92,
+        monthly: [{ period: 'Janeiro', kwh: 128400 }],
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 29800 },
+          { period: 'Sem 2 (08-14)', kwh: 31200 },
+          { period: 'Sem 3 (15-21)', kwh: 33600 },
+          { period: 'Sem 4 (22-31)', kwh: 33800 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 4380 }, { period: 'Ter', kwh: 4520 },
+          { period: 'Qua', kwh: 4610 }, { period: 'Qui', kwh: 4490 },
+          { period: 'Sex', kwh: 4720 }, { period: 'S\u00e1b', kwh: 3180 },
+          { period: 'Dom', kwh: 2640 }
+        ]
+      },
+      '2026-02': {
+        label: 'Fevereiro de 2026',
+        daysInMonth: 28,
+        contractLimit: 135000,
+        tariff: 0.92,
+        monthly: [{ period: 'Fevereiro', kwh: 120900 }],
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 28100 },
+          { period: 'Sem 2 (08-14)', kwh: 29800 },
+          { period: 'Sem 3 (15-21)', kwh: 31400 },
+          { period: 'Sem 4 (22-28)', kwh: 31600 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 4120 }, { period: 'Ter', kwh: 4280 },
+          { period: 'Qua', kwh: 4350 }, { period: 'Qui', kwh: 4190 },
+          { period: 'Sex', kwh: 4480 }, { period: 'S\u00e1b', kwh: 2980 },
+          { period: 'Dom', kwh: 2510 }
+        ]
+      },
+      '2026-03': {
+        label: 'Mar\u00e7o de 2026',
+        daysInMonth: 31,
+        contractLimit: 135000,
+        tariff: 0.95,
+        monthly: [{ period: 'Mar\u00e7o', kwh: 117300 }],
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 26400 },
+          { period: 'Sem 2 (08-14)', kwh: 28600 },
+          { period: 'Sem 3 (15-21)', kwh: 30100 },
+          { period: 'Sem 4 (22-31)', kwh: 32200 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 3980 }, { period: 'Ter', kwh: 4150 },
+          { period: 'Qua', kwh: 4280 }, { period: 'Qui', kwh: 4060 },
+          { period: 'Sex', kwh: 4340 }, { period: 'S\u00e1b', kwh: 2860 },
+          { period: 'Dom', kwh: 2380 }
+        ]
+      },
+      '2026-04': {
+        label: 'Abril de 2026',
+        daysInMonth: 30,
+        contractLimit: 135000,
+        tariff: 0.95,
+        monthly: [{ period: 'Abril', kwh: 124600 }],
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 28900 },
+          { period: 'Sem 2 (08-14)', kwh: 30400 },
+          { period: 'Sem 3 (15-21)', kwh: 32800 },
+          { period: 'Sem 4 (22-30)', kwh: 32500 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 4260 }, { period: 'Ter', kwh: 4410 },
+          { period: 'Qua', kwh: 4530 }, { period: 'Qui', kwh: 4370 },
+          { period: 'Sex', kwh: 4590 }, { period: 'S\u00e1b', kwh: 3050 },
+          { period: 'Dom', kwh: 2540 }
+        ]
+      },
+      '2026-05': {
+        label: 'Maio de 2026',
+        daysInMonth: 31,
+        contractLimit: 135000,
+        tariff: 0.97,
+        monthly: [{ period: 'Maio', kwh: 131200 }],
+        weekly: [
+          { period: 'Sem 1 (01-07)', kwh: 30100 },
+          { period: 'Sem 2 (08-14)', kwh: 32400 },
+          { period: 'Sem 3 (15-21)', kwh: 34200 },
+          { period: 'Sem 4 (22-31)', kwh: 34500 }
+        ],
+        daily: [
+          { period: 'Seg', kwh: 4520 }, { period: 'Ter', kwh: 4680 },
+          { period: 'Qua', kwh: 4790 }, { period: 'Qui', kwh: 4610 },
+          { period: 'Sex', kwh: 4850 }, { period: 'S\u00e1b', kwh: 3240 },
+          { period: 'Dom', kwh: 2710 }
+        ]
+      }
+    };
+
+    const monthOrder = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05'];
+
+    function getPrevMonthData(currentMonth) {
+      const idx = monthOrder.indexOf(currentMonth);
+      return idx > 0 ? complianceData[monthOrder[idx - 1]] : null;
+    }
+
+    function trendHtml(current, previous, invert) {
+      if (previous == null) return '';
+      const diff = ((current - previous) / previous) * 100;
+      const absDiff = Math.abs(diff).toFixed(1);
+      if (Math.abs(diff) < 0.5) return '<span class="trend-neutral">= 0%</span>';
+      const isUp = diff > 0;
+      const arrow = isUp ? '\u2191' : '\u2193';
+      const cls = invert ? (isUp ? 'trend-down' : 'trend-up') : (isUp ? 'trend-up' : 'trend-down');
+      return '<span class="' + cls + '">' + arrow + ' ' + absDiff + '%</span>';
+    }
+
+    function renderCompliancePage() {
+      const month = complianceMonthSelect.value;
+      const view = complianceViewSelect.value;
+      const data = complianceData[month];
+      const periods = view === 'monthly' ? data.monthly : view === 'weekly' ? data.weekly : data.daily;
+      const prevData = getPrevMonthData(month);
+
+      const totalKwh = view === 'monthly'
+        ? data.monthly[0].kwh
+        : periods.reduce((s, p) => s + p.kwh, 0);
+      const limit = view === 'monthly'
+        ? data.contractLimit
+        : view === 'weekly'
+          ? Math.round(data.contractLimit / 4)
+          : Math.round(data.contractLimit / 30);
+      const usagePct = (totalKwh / data.contractLimit) * 100;
+      const cost = totalKwh * data.tariff;
+
+      const prevTotalKwh = prevData ? prevData.monthly[0].kwh : null;
+      const prevUsagePct = prevData ? (prevData.monthly[0].kwh / prevData.contractLimit) * 100 : null;
+      const prevCost = prevData ? prevData.monthly[0].kwh * prevData.tariff : null;
+
+      complianceTotalKwh.textContent = new Intl.NumberFormat('pt-BR').format(totalKwh) + ' kWh';
+      complianceLimit.textContent = new Intl.NumberFormat('pt-BR').format(data.contractLimit) + ' kWh';
+      complianceUsage.textContent = usagePct.toFixed(1) + '%';
+      complianceCost.textContent = 'R$ ' + new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(cost);
+      complianceScore.textContent = usagePct <= 85 ? (100 - Math.round(usagePct * 0.08)) + '%' : usagePct <= 95 ? '88%' : '76%';
+      complianceLabel.textContent = usagePct <= 90 ? 'Dentro dos limites regulat\u00f3rios' : 'Pr\u00f3ximo do limite contratado';
+      compliancePeriodLabel.textContent = data.label;
+
+      if (complianceTotalTrend) complianceTotalTrend.innerHTML = trendHtml(totalKwh, prevTotalKwh, true);
+      if (complianceUsageTrend) complianceUsageTrend.innerHTML = trendHtml(usagePct, prevUsagePct, true);
+      if (complianceCostTrend) complianceCostTrend.innerHTML = trendHtml(cost, prevCost, true);
+
+      const dailyAvg = Math.round(data.monthly[0].kwh / data.daysInMonth);
+      if (complianceDailyAvg) complianceDailyAvg.textContent = new Intl.NumberFormat('pt-BR').format(dailyAvg) + ' kWh';
+
+      const peakPeriod = [...data.daily].sort((a, b) => b.kwh - a.kwh)[0];
+      if (compliancePeak) compliancePeak.textContent = new Intl.NumberFormat('pt-BR').format(peakPeriod.kwh) + ' kWh';
+      if (compliancePeakLabel) compliancePeakLabel.textContent = peakPeriod.period;
+
+      // Chart bars
+      const maxKwh = Math.max(...periods.map((p) => p.kwh));
+      complianceBars.innerHTML = periods.map((p) => {
+        const pct = (p.kwh / (maxKwh * 1.2)) * 100;
+        const limitPct = (limit / (maxKwh * 1.2)) * 100;
+        const ratio = p.kwh / limit;
+        const cls = ratio > 1 ? 'is-over' : ratio > 0.9 ? 'is-warning' : 'is-ok';
+        return `<div class="compliance-bar-group">
+          <span class="compliance-bar-label">${p.period}</span>
+          <div class="compliance-bar-track">
+            <div class="compliance-bar-fill ${cls}" style="width:${pct.toFixed(1)}%"></div>
+            <div class="compliance-bar-limit" style="left:${Math.min(limitPct, 100).toFixed(1)}%"></div>
+          </div>
+          <span class="compliance-bar-value">${new Intl.NumberFormat('pt-BR').format(p.kwh)} kWh</span>
+        </div>`;
+      }).join('');
+
+      // Table
+      complianceTableBody.innerHTML = periods.map((p) => {
+        const periodLimit = limit;
+        const pctUsed = (p.kwh / periodLimit * 100);
+        const periodCost = p.kwh * data.tariff;
+        const statusClass = pctUsed > 100 ? 'is-alert' : pctUsed > 90 ? 'is-warning' : 'is-good';
+        const statusLabel = pctUsed > 100 ? 'Excedido' : pctUsed > 90 ? 'Aten\u00e7\u00e3o' : 'Conforme';
+        return `<tr>
+          <td>${p.period}</td>
+          <td>${new Intl.NumberFormat('pt-BR').format(p.kwh)}</td>
+          <td>${new Intl.NumberFormat('pt-BR').format(periodLimit)}</td>
+          <td>${pctUsed.toFixed(1)}%</td>
+          <td>R$ ${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(periodCost)}</td>
+          <td><span class="table-status ${statusClass}">${statusLabel}</span></td>
+        </tr>`;
+      }).join('');
+
+      // Table footer totals
+      if (complianceTableFoot) {
+        const totalPeriodKwh = periods.reduce((s, p) => s + p.kwh, 0);
+        const totalPeriodLimit = limit * periods.length;
+        const totalPeriodPct = (totalPeriodKwh / totalPeriodLimit * 100);
+        const totalPeriodCost = totalPeriodKwh * data.tariff;
+        complianceTableFoot.innerHTML = `<tr class="table-total-row">
+          <td><strong>Total</strong></td>
+          <td><strong>${new Intl.NumberFormat('pt-BR').format(totalPeriodKwh)}</strong></td>
+          <td><strong>${new Intl.NumberFormat('pt-BR').format(totalPeriodLimit)}</strong></td>
+          <td><strong>${totalPeriodPct.toFixed(1)}%</strong></td>
+          <td><strong>R$ ${new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(totalPeriodCost)}</strong></td>
+          <td></td>
+        </tr>`;
+      }
+
+      // Summary
+      const overLimit = periods.filter((p) => p.kwh > limit);
+      const nearLimit = periods.filter((p) => p.kwh / limit > 0.9 && p.kwh <= limit);
+      const conforming = periods.filter((p) => p.kwh / limit <= 0.9);
+
+      complianceSummary.innerHTML = [
+        { label: 'Per\u00edodos conformes', count: conforming.length, total: periods.length, indicator: 'is-ok' },
+        { label: 'Per\u00edodos em aten\u00e7\u00e3o', count: nearLimit.length, total: periods.length, indicator: 'is-warning' },
+        { label: 'Per\u00edodos excedidos', count: overLimit.length, total: periods.length, indicator: 'is-over' }
+      ].map((item) => `<div class="compliance-summary-item">
+        <strong>${item.label}</strong>
+        <span>${item.count} de ${item.total}</span>
+        <span class="compliance-indicator ${item.indicator}"><span class="compliance-indicator-dot"></span> ${item.count === 0 ? 'Nenhum' : item.count + ' per\u00edodo' + (item.count > 1 ? 's' : '')}</span>
+      </div>`).join('');
+
+      // Insights
+      const insights = [];
+      if (prevData) {
+        const variation = ((data.monthly[0].kwh - prevData.monthly[0].kwh) / prevData.monthly[0].kwh * 100);
+        if (variation > 0) {
+          insights.push('Consumo aumentou ' + Math.abs(variation).toFixed(1) + '% em rela\u00e7\u00e3o ao m\u00eas anterior (' + prevData.label + ').');
+        } else {
+          insights.push('Consumo reduziu ' + Math.abs(variation).toFixed(1) + '% em rela\u00e7\u00e3o ao m\u00eas anterior (' + prevData.label + ').');
+        }
+      }
+      if (usagePct <= 85) {
+        insights.push('O consumo est\u00e1 bem abaixo do limite contratado. Margem segura para opera\u00e7\u00e3o.');
+      } else if (usagePct <= 95) {
+        insights.push('Consumo pr\u00f3ximo do limite. Recomenda-se monitorar os hor\u00e1rios de pico.');
+      } else {
+        insights.push('Consumo muito pr\u00f3ximo ou acima do limite. Avaliar renegocia\u00e7\u00e3o de demanda contratada.');
+      }
+      if (overLimit.length > 0) {
+        insights.push(overLimit.length + ' per\u00edodo(s) excederam o limite proporcional. Investigue os picos.');
+      }
+      if (view === 'daily') {
+        const weekdayAvg = Math.round((data.daily[0].kwh + data.daily[1].kwh + data.daily[2].kwh + data.daily[3].kwh + data.daily[4].kwh) / 5);
+        const weekendAvg = Math.round((data.daily[5].kwh + data.daily[6].kwh) / 2);
+        const weekendDrop = ((weekdayAvg - weekendAvg) / weekdayAvg * 100).toFixed(0);
+        insights.push('Fins de semana consomem ' + weekendDrop + '% menos que dias \u00fateis. Otimize desligamentos autom\u00e1ticos.');
+      }
+      if (view === 'weekly') {
+        insights.push('A tend\u00eancia semanal mostra crescimento gradual. Acompanhe para evitar estouro no fim do m\u00eas.');
+      }
+      if (view === 'monthly') {
+        const margem = data.contractLimit - data.monthly[0].kwh;
+        insights.push('Margem dispon\u00edvel: ' + new Intl.NumberFormat('pt-BR').format(margem) + ' kWh at\u00e9 o limite contratado.');
+      }
+      complianceInsights.innerHTML = insights.map((i) => `<li>${i}</li>`).join('');
+
+      // Status message
+      if (usagePct > 95) {
+        setStandaloneStatus(complianceStatus, 'error', 'Consumo acima de 95% do limite contratado. A\u00e7\u00e3o imediata recomendada.');
+      } else if (usagePct > 85) {
+        setStandaloneStatus(complianceStatus, 'warning', 'Consumo entre 85-95% do limite. Monitore os pr\u00f3ximos dias com aten\u00e7\u00e3o.');
+      } else {
+        setStandaloneStatus(complianceStatus, 'success', 'Consumo dentro da faixa de conformidade. Opera\u00e7\u00e3o est\u00e1vel.');
+      }
+    }
+
+    if (complianceExportCsv) {
+      complianceExportCsv.addEventListener('click', () => {
+        setStandaloneStatus(complianceStatus, 'success', 'Arquivo CSV gerado com sucesso. O download iniciou automaticamente.');
+      });
+    }
+    if (complianceExportPdf) {
+      complianceExportPdf.addEventListener('click', () => {
+        complianceExportPdf.classList.add('btn-loading');
+        setTimeout(() => {
+          complianceExportPdf.classList.remove('btn-loading');
+          complianceExportPdf.classList.add('btn-success');
+          complianceExportPdf.addEventListener('animationend', () => complianceExportPdf.classList.remove('btn-success'), { once: true });
+          setStandaloneStatus(complianceStatus, 'success', 'Relat\u00f3rio PDF exportado com sucesso.');
+        }, 1200);
+      });
+    }
+
+    complianceViewSelect.addEventListener('change', renderCompliancePage);
+    complianceMonthSelect.addEventListener('change', renderCompliancePage);
+    renderCompliancePage();
+  }
+
+
+  // ── Show active sector badge on dashboard pages ──
+  const sidebarNav = document.querySelector('.sidebar-nav');
+  if (sidebarNav) {
+    const activeSector = sessionStorage.getItem('lumemflow-sector-name');
+    const existingSectorLink = sidebarNav.querySelector('[data-sector-switcher]');
+
+    if (!existingSectorLink) {
+      const sectorLink = document.createElement('a');
+      sectorLink.href = 'selecao-setor.html';
+      sectorLink.className = 'sidebar-link';
+      sectorLink.dataset.sectorSwitcher = 'true';
+      sectorLink.textContent = activeSector ? 'Trocar setor' : 'Selecionar setor';
+
+      const loginLink = [...sidebarNav.querySelectorAll('.sidebar-link')]
+        .find((link) => (link.getAttribute('href') || '').includes('index.html'));
+
+      if (loginLink) {
+        loginLink.before(sectorLink);
+      } else {
+        sidebarNav.appendChild(sectorLink);
+      }
+    }
+
+    if (activeSector) {
+      const sidebarBlock = document.querySelector('.sidebar-block');
+      const existingBadge = document.querySelector('.sector-active-badge');
+
+      if (sidebarBlock && !existingBadge) {
+        const badge = document.createElement('div');
+        badge.className = 'sector-active-badge';
+        badge.textContent = 'Setor: ' + activeSector;
+        badge.style.marginTop = '10px';
+        sidebarBlock.appendChild(badge);
+      }
+    }
   }
 });
